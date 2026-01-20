@@ -6,26 +6,8 @@ Multivariate statistical visualization (clustering, correlation, heatmaps, etc) 
 live at: https://lorenasandoval88.github.io/statsjs
 
 repo layout:
+<img width="246" height="246" alt="image" src="https://github.com/user-attachments/assets/8c38acbd-9c11-40c4-a762-e9ebbd16425b" />
 
-statsjs/
-  src/                 # source code (internal modules)
-    pca.js
-    heatmap.js
-    hclust.js
-    index.js           # SDK entry (public)
-  demo/                # your GitHub Pages site
-    index.html
-    main.js
-    css/
-    img/
-    data/
-      iris.json
-  dist/                # built SDK output (public)
-    sdk.mjs
-    sdk.min.mjs
-  package.json
-  rollup.config.js
-  README.md
 
 Demo: 
 ### Loading statsJs ES6 Modules:
