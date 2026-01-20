@@ -14,7 +14,7 @@ repo layout:
 Demo: 
 ### Loading statsJs ES6 Modules:
 
-`sdk = await import("https://lorenasandoval88.github.io/statsjs/sdk.js")`
+`sdk = await import("https://lorenasandoval88.github.io/clustjs/sdk.js")`
 
 ### Loading the User Interface (UI):
 
