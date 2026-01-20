@@ -7,7 +7,8 @@ live at: https://lorenasandoval88.github.io/statsjs
 
 repo layout:
 
-<img width="246" height="355" alt="image" src="https://github.com/user-attachments/assets/8c38acbd-9c11-40c4-a762-e9ebbd16425b" />
+<img width="246" height="755" alt="image" src="https://github.com/user-attachments/assets/8c38acbd-9c11-40c4-a762-e9ebbd16425b" />
+
 
 
 Demo: 
