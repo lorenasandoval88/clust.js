@@ -5,6 +5,29 @@ Multivariate statistical visualization (clustering, correlation, heatmaps, etc) 
 
 live at: https://lorenasandoval88.github.io/statsjs
 
+repo layout:
+
+statsjs/
+  src/                 # source code (internal modules)
+    pca.js
+    heatmap.js
+    hclust.js
+    index.js           # SDK entry (public)
+  demo/                # your GitHub Pages site
+    index.html
+    main.js
+    css/
+    img/
+    data/
+      iris.json
+  dist/                # built SDK output (public)
+    sdk.mjs
+    sdk.min.mjs
+  package.json
+  rollup.config.js
+  README.md
+
+Demo: 
 ### Loading statsJs ES6 Modules:
 
 `sdk = await import("https://lorenasandoval88.github.io/statsjs/sdk.js")`
