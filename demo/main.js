@@ -1,5 +1,5 @@
 // demo/main.js
-import * as clustjs from "../dist/sdk.mjs";
+import * as clustjs from "..clustjs/dist/sdk.mjs";
 
 // Example: wire buttons/modals to functions
 window.clustjs = clustjs; // optional: for console demos
