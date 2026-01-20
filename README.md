@@ -3,7 +3,7 @@
 
 Multivariate statistical visualization (clustering, correlation, heatmaps, etc) in JavaScript. 
 
-live at: https://lorenasandoval88.github.io/statsjs
+live at: https://lorenasandoval88.github.io/clustjs
 
 repo layout:
 
@@ -51,4 +51,4 @@ define the text using the built in Iris data.
     }
     
         
-Further documentation can be found on the [wiki](https://github.com/lorenasandoval88/clust.js/wiki).
+Further documentation can be found on the [wiki](https://github.com/lorenasandoval88/clustjs/wiki).
