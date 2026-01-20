@@ -22,7 +22,7 @@ Demo:
 ```sdk.pca_UI( {colors: ["#8C236A", "#4477AA"]} )```
 
    
-    {  # options can include the following (order is irrelevant) or be left empty
+    {  # options can include the following or be left empty (order is irrelevant) 
         divId: "as a string", 
         colors: [...list],
         data: data in JSON format,
