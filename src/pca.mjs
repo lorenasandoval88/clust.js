@@ -23,8 +23,8 @@ pcaDt.data.file = "none loaded"
 
 
 
-pcaDt.getScores = async function (data) {
-  console.log("RUNNING pcaDt.getScores()-------------------------------",data)
+const pcaScores = async function (data) {
+  console.log("RUNNING pcaScores()-------------------------------")
 
   const numbersOnlyObjs = removeNonNumberValues(data)
   // console.log("numbersOnlyObjs", numbersOnlyObjs)
@@ -113,7 +113,7 @@ const pca_plot = async function (options = {}) {
   //TODO calcscores
 
   // console.log(" data - pca_plot() (1st row):", data[0])
-  const scores = await pcaDt.getScores(data)
+  const scores = await pcaScores(data)
   const groups = [...new Set(scores.map(d => d.group))] //.values()//.sort())
   const color = d3.scaleOrdinal(colors).domain(groups)
 
