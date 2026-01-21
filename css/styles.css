@@ -221,30 +221,108 @@ svg {
 }
 
 
+
+/* ===== GLOBAL BACKGROUND ===== */
+body {
+  background-color: #000000;
+  color: #eaeaea;
+}
+
+/* ===== PANELS (cards on dark bg) ===== */
+/* Make Data Source panel narrower */
+.data-panel {
+  max-width: 340px;     /* adjust: 360–480px sweet spot */
+  margin: 0 auto;       /* center inside column */
+  font-size: 0.9rem;
+
+}
+.output-panel {
+  background: #111111;
+  border: 1px solid #2a2a2a;
+  color: #eaeaea;
+}
+
+/* ===== TOOL BUTTONS ===== */
 .tool-square {
-  width: 220px;
-  height: 220px;
-  background: #ffffff;
-  border: 2px solid #dee2e6;
-  border-radius: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
+  background: #111111;
+  border: 2px solid #2a2a2a;
+  color: #eaeaea;
 }
 
 .tool-square:hover {
   background: #0d6efd;
   color: #ffffff;
   border-color: #0d6efd;
-  transform: translateY(-4px);
 }
 
-
-.navbar-brand {
-  letter-spacing: 0.05em;
-  font-weight: 700;
+/* ===== FORM CONTROLS ===== */
+.form-control,
+.form-select {
+  background-color: #0f0f0f;
+  color: #eaeaea;
+  border: 1px solid #333;
 }
+
+.form-control::file-selector-button {
+  background: #1f1f1f;
+  color: #eaeaea;
+  border: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: #0f0f0f;
+  color: #ffffff;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.15rem rgba(13,110,253,.25);
+}
+
+/* ===== TEXT HELPERS ===== */
+.form-text {
+  color: #9ca3af;
+}
+
+/* ===== NAVBAR (already dark, refine) ===== */
+.navbar {
+  border-bottom: 1px solid #222;
+}
+
+/* ===== OUTPUT CONTAINERS (plots) ===== */
+#myPCA,
+#myHclust,
+#myHeatmap {
+  background: #000000;
+  color: #eaeaea;
+}
+
+/* ===== CSS: make the right table scrollable + match dark background==== */
+
+#rightData {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid #222;
+  border-radius: 0.5rem;
+   padding-right: 1rem;   /* try 0.75rem – 1.5rem */
+}
+
+/* Stack spacing on left */
+.tool-panel {
+  margin-bottom: 1.25rem;
+}
+
+/* Prevent PCA SVG from being clipped */
+#myPCA {
+  background: #ffffff;
+  color: #000000;
+  padding: 12px;
+  width: 100%;
+  overflow: auto;         /* allows scroll if needed */
+  padding: 12px;          /* breathing room */
+}
+
+/* Ensure the SVG can render fully */
+#myPCA svg {
+  display: block;
+  max-width: none;        /* don't force shrink */
+}
+
