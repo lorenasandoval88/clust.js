@@ -1,18 +1,8 @@
-console.log("mypcaDt.mjs loaded")
-
-
-
+console.log("pca.mjs loaded")
 // TODO: limit textbox rows to 500
 // TODO: automate UI to apply to dendo and heatmap
-import { // irisJSON,
-  // irisCSV, 
-   csvToJson,  convertStrToNumber,  removeNonNumbers,
-  removeNumbers,  removeNonNumberValues,  removeNumberValues,
-  asDataFrame,  scale,  createTableFromCSV,  textBox
-} from './otherFunctions.js'
-
-import {  npm_pca,  npm_pcajs,  Plotly,  d3,  d3tip,  ml_dataset_iris,
-  localforage} from './imports.js'
+import {   removeNonNumberValues,  removeNumberValues,  scale} from './otherFunctions.js'
+import {  npm_pca,   d3,  d3tip,  localforage} from './imports.js'
 
 
 const pcaDt = { data: {}}
@@ -180,7 +170,7 @@ const pca_plot = async function (options = {}) {
 
   svg.selectAll(".domain, .tick line")
   .attr("stroke", "#000000");
-  
+
   svg.id = "svgid"
   // const g = d3.select(DOM.svg(width, height));
 
@@ -296,255 +286,14 @@ const pca_plot = async function (options = {}) {
 
 
 
-
-
-
-// load file and plot PCA
-const pca_UI = async (options = {}) => {
-
-  console.log("RUNNING pca_UI()-------------------------------");
-  console.log("pca UI div num", pcaDt.data.divNum,pcaDt.data.divNum)
-
-  const {
-    divid: divid = "",
-    //todo: add textbox opyions, height width color etc
-  } = options
-
-
-  let div = document.getElementById(divid);
-
-  if (document.getElementById(divid)) {
-    // The div with the specified ID exists, updating...
-    console.log("pca_UI() div ID provided, loading div:", div);
-    // div.id = 'loadUI'
-  } else {
-    // create the div element here
-    div = document.createElement("div")
-    div.id = 'loadUI_' + (pcaDt.data.divNum)
-    div.style.alignContent = "center"
-    document.body.appendChild(div);
-    console.log("pca_UI() div NOT provided. creating div...", div);
-  }
-
-  // iris data button 
-  const irisDataButton = document.createElement('button')
-  irisDataButton.id = 'irisDataButton'+(pcaDt.data.divNum)
-  irisDataButton.textContent = 'Load Iris Data'
-  div.appendChild(irisDataButton);
-  console.log("pcaUI: irisDataButton:", document.getElementById(irisDataButton.id))
-
-  // file input Button
-  const fileInput = document.createElement('input')
-  fileInput.id = 'fileInput'+(pcaDt.data.divNum)
-  fileInput.setAttribute('type', 'file')
-  div.appendChild(fileInput);
-  div.append(document.createElement('br'));
-  div.append(document.createElement('br'));
-
-  // create plot div
-  const plotDiv = document.createElement("div")
-  plotDiv.id = 'pcaplotDiv'+(pcaDt.data.divNum)
-  div.appendChild(plotDiv);
-  console.log("PCAUI: plotDiv:", document.getElementById(plotDiv.id))
-
-  // create textbox div
-  const textBoxDiv = document.createElement("div")
-  textBoxDiv.id = 'textBoxDiv'+(pcaDt.data.divNum)
-  textBoxDiv.style.alignContent = "center"
-  div.appendChild(textBoxDiv);
-  console.log("PCAUI: textBoxDiv:", document.getElementById(textBoxDiv.id))
-
-
-// draft agenda with professor. 
-  // event listener for load file data buttons
-  fileInput.addEventListener('change', (event) => {
-
-    console.log(pcaDt.data.divNum,"fileInput button clicked!")
-
-    const files = event.target.files;
-    for (const file of files) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const file = event.target.files[0]
-        if (file) {
-          const reader = new FileReader();
-
-          reader.onload = async function (e) {
-            const csv = e.target.result;
-            const json = await csvToJson(csv)
-
-            console.log("pcaDt.data.divNum", pcaDt.data.divNum)
-
-            const matrix = (json.map(Object.values))
-            matrix['headers'] = json['headers']
-
-            pcaDt.data.file = []
-            pcaDt.data.file.json = json
-            pcaDt.data.file.csv = csv
-
-            // PCA plot and text box
-            pca_plot({data: json, divid: plotDiv.id})
-            textBox({text: csv, divid: textBoxDiv.id})
-     
-          };
-          reader.onerror = function () {
-            displayError('Error reading the file.');
-          };
-          reader.readAsText(file);
-        }
-
-
-      };
-      reader.readAsText(file); // Read as text, other options are readAsArrayBuffer, readAsDataURL
-    }
-
-  });
-
-  // event listener for load iris data button
-  document.getElementById(irisDataButton.id).addEventListener('click', async function () {
-
-    console.log(pcaDt.data.divNum,"load iris data button clicked!")
-
-     // PCA plot and text box
-    pca_plot({data: pcaDt.data.iris.json,divid: plotDiv.id })
-    textBox({ text: pcaDt.data.iris.csv, divid: textBoxDiv.id})
-
-  });
-
-    pcaDt.data.divNum += 1
-
-}
-
 export {  // pca
   pca_plot,
-  pca_UI
 }
 
 
 
 
 
-
-
-
-
-
-
-
-async function pcaPlotlyPlot4(data) {
-  //console.log("data", data)
-  const deviationMatrix = npm_pcajs.computeDeviationMatrix(data);
-  const eigenvectors = npm_pcajs.getEigenVectors(deviationMatrix);
-  // const eigenvalues = npm_pcajs.computeEigenvalues(deviationMatrix);
-  //console.log("eigenvectors", eigenvectors)
-
-  const adjustedMatrix = npm_pcajs.computeAdjustedData(data, eigenvectors[0]);
-  //console.log("adjustedMatrix------------------", adjustedMatrix)
-  // Extract the first two principal components
-  const pc1 = adjustedMatrix.map(row => row[0]);
-  const pc2 = adjustedMatrix.map(row => row[1]);
-
-  // Create a scatter plot using Plotly
-  const trace = {
-    x: pc1,
-    y: pc2,
-    mode: 'markers',
-    type: 'scatter'
-  };
-
-  const layout = {
-    title: 'PCA Results',
-    xaxis: {
-      title: 'Principal Component 1'
-    },
-    yaxis: {
-      title: 'Principal Component 2'
-    }
-  };
-  // Create the plot div
-  const pca_plot4 = document.createElement("div")
-  pca_plot4.id = 'pca_plot4'
-  // pca_plot4.style.width = 400 //"auto";
-  pca_plot4.style.height = 400 //"auto";
-
-  document.body.appendChild(pca_plot4);
-  Plotly.newPlot('pca-pca_plot4', [trace], layout);
-}
-
-// Assume 'data' is your dataset and 'labels' are the corresponding labels
-// 'data' should be a 2D array where each row represents a iris and each column represents a feature
-// 'labels' should be an array with the same length as the number of rows in 'data'
-async function pcaPlotly3DPlot(data, labels) {
-
-  var eigenvectors = imports.npm_pcajs.getEigenVectors(data);
-  // var first = imports.npm_pcajs.computePercentageExplained(vectors,vectors[0])
-  var topTwo = imports.npm_pcajs.computePercentageExplained(eigenvectors, eigenvectors[0], eigenvectors[1])
-  // // const explainedVariance = imports.npm_pcajs.getExplainedVariance();
-
-  // //console.log("vectors",vectors)
-  // //console.log("first",first)
-  //console.log("topTwo", topTwo)
-  //console.log("eigenvectors", eigenvectors)
-  //console.log("eigenvectors.map(row => row[0])", eigenvectors[0].vector)
-  //console.log("eigenvectors.map(row => row[1])", eigenvectors[1].vector)
-
-  const numComponents = 2
-  const pcScores = data.map(row => {
-    const transformedRow = [];
-    for (let i = 0; i < numComponents; i++) {
-      transformedRow.push(row.reduce((sum, val, idx) => sum + val * eigenvectors[idx][i], 0));
-    }
-    return transformedRow;
-  });
-  //console.log("pcScores", pcScores)
-  const pc1 = eigenvectors[0].vector //eigenvectors.map(row => row[0]);
-  const pc2 = eigenvectors[1].vector //eigenvectors.map(row => row[1]);
-  // For 3D plot
-  const pc3 = eigenvectors[2].vector //pcScores.map(row => row[2]);
-
-  const trace3d = {
-    x: pc1,
-    y: pc2,
-    z: pc3,
-    mode: 'markers',
-    type: 'scatter3d',
-    marker: {
-      size: 4,
-      opacity: 0.8
-    }
-  };
-
-  const layout3d = {
-    margin: {
-      l: 20,
-      r: 0,
-      b: 50,
-      t: 110
-    },
-    title: '3D PCA Plot',
-    scene: {
-      xaxis: {
-        title: 'Principal Component 1'
-      },
-      yaxis: {
-        title: 'Principal Component 2'
-      },
-      zaxis: {
-        title: 'Principal Component 3'
-      }
-    }
-  };
-  // Create the plot div
-  const pca_plot2 = document.createElement("div")
-  pca_plot2.id = 'pca_plot2'
-  pca_plot2.style.width = 400 //"auto";
-  pca_plot2.style.height = 400 //"auto";
-  document.body.appendChild(pca_plot2);
-  // pca_plot2.append(document.createElement('br'));
-  //console.log("imports.Plotly", imports.Plotly)
-
-  await imports.Plotly.newPlot('pca_plot2', [trace3d], layout3d);
-}
 
 async function pcaPlotly2DPlot(data, labels) {
   var eigenvectors = imports.npm_pcajs.getEigenVectors(data);
