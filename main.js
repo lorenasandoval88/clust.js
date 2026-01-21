@@ -99,6 +99,9 @@ document.getElementById("builtinData")?.addEventListener("change", (e) => {
   }
 });
 
+
+
+
 // ======== GUI: LOAD FILE ========
 document.getElementById("fileInput")?.addEventListener("change", (e) => {
   const file = e.target.files?.[0];
@@ -146,6 +149,10 @@ const el = document.getElementById("myPCA");
   const height = 460;
 
 
+  const p = document.getElementById("myPCA");
+if (p) {
+  p.classList.add("has-plot");
+}
   await pca_plot({
     data,
     divid: "myPCA",

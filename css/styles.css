@@ -310,15 +310,37 @@ body {
   margin-bottom: 1.25rem;
 }
 
-/* Prevent PCA SVG from being clipped */
+/* Prevent PCA SVG from being clipped
 #myPCA {
+  background: #ffffff;
+  color: #000000;
+  padding: 12px;
+  width: 100%;
+  overflow: auto;         
+  padding: 12px;          
+} */
+
+/* Prevent PCA SVG from being clipped */
+/* PCA container: invisible until plot renders */
+#myPCA{
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  overflow: auto;
+  min-height: 0;       /* no placeholder height */
+}
+
+/* When plot exists, add this class to get white plot frame */
+#myPCA.has-plot{
   background: #ffffff;
   color: #000000;
   padding: 12px;
   width: 100%;
   overflow: auto;         /* allows scroll if needed */
   padding: 12px;          /* breathing room */
+  border-radius: 12px;     /* optional */
 }
+
 
 /* Ensure the SVG can render fully */
 #myPCA svg {
