@@ -209,6 +209,7 @@ const pca_plot = async function (options = {}) {
   const tooltip = d3tip()
     .style('border', 'solid 2px navy')
     .style('background-color', 'white')
+    .style("color", "#000")
     .style('border-radius', '7px')
     // .style('float', 'left')
     .style('font-family', fontFamily)

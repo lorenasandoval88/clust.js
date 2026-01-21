@@ -8,13 +8,7 @@ const appState = {
 };
 
 // ======== IRIS (your built-in sample) ========
-const irisData = [
-  { sepal_length: 5.1, sepal_width: 3.5, petal_length: 1.4, petal_width: 0.2, species: "setosa" },
-  { sepal_length: 4.9, sepal_width: 3.0, petal_length: 1.4, petal_width: 0.2, species: "setosa" },
-  { sepal_length: 7.0, sepal_width: 3.2, petal_length: 4.7, petal_width: 1.4, species: "versicolor" },
-  { sepal_length: 6.4, sepal_width: 3.2, petal_length: 4.5, petal_width: 1.5, species: "versicolor" },
-  { sepal_length: 6.3, sepal_width: 3.3, petal_length: 6.0, petal_width: 2.5, species: "virginica" }
-];
+const irisData = await fetch("./src/data/iris.json").then(r => r.json());
 
 // ======== RIGHT PANEL TABLE RENDER ========
 function renderTableRight(data, title = "Dataset Preview") {
@@ -148,11 +142,12 @@ const el = document.getElementById("myPCA");
   const width = Math.max(520, el.clientWidth - 24);
   const height = 460;
 
-
+// Toggle the class in JS when you render/clear PCA plot so background stays white
   const p = document.getElementById("myPCA");
-if (p) {
-  p.classList.add("has-plot");
-}
+    if (p) {
+    p.classList.add("has-plot");
+    }
+
   await pca_plot({
     data,
     divid: "myPCA",
@@ -160,3 +155,8 @@ if (p) {
     height: height
   });
 });
+
+
+  await pca_plot({
+  
+  });
