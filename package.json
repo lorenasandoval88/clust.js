@@ -2,9 +2,12 @@
   "name": "clustjs",
   "private": true,
   "type": "module",
+ 
   "scripts": {
-    "build": "rollup -c"
-  },
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
+  }
+,
   "devDependencies": {
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "^6.1.0",

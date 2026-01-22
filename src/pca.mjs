@@ -10,13 +10,12 @@ import irisData from "./data/irisData.js";
 
 // import localforage from "localforage";  // only if you truly need it in SDK
 
-const pcaDt = { data: {}}
+const pcaObj = { data: {}}
 
 // create button when UI function is called?, name divs by number
 const divNum = 1
-pcaDt.data.divNum = divNum
-console.log("pca pcaDt.data.divNum:", pcaDt.data.divNum)
-console.log("pcaDt object:", pcaDt)
+pcaObj.data.divNum = divNum
+console.log("pca pcaObj div #:", pcaObj.data.divNum)
 
 
 const pcaScores = async function (data) {

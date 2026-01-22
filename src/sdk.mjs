@@ -9,7 +9,8 @@ export { default as irisData } from "./data/irisData.js";
 export { pca_plot } from "./pca.mjs";
 // export { heatmap_plot } from "./plots/heatmap.mjs";
 // export { hclust_plot } from "./plots/hclust.mjs";
-
+// optionally also export helpers
+export * from "./otherFunctions.js";
 
 // ===============================
 // SDK METADATA
