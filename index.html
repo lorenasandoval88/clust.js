@@ -13,6 +13,8 @@
 
   <!-- Custom styles -->
   <link href="./css/styles.css" rel="stylesheet" />
+
+
 </head>
 
 <body>
@@ -61,22 +63,22 @@
       <div class="data-panel">
         <h6 class="mb-3 text-center">Data Source</h6>
 
- <!-- File upload -->
-<div class="mb-3">
-  <label class="form-label">Load file</label>
-  <input type="file" class="form-control" id="fileInput" />
+        <!-- File upload -->
+        <div class="mb-3">
+          <label class="form-label">Load file</label>
+          <input type="file" class="form-control" id="fileInput" />
 
-  <!-- Download sample CSV -->
-  <div class="mt-2">
-    <a
-      href="./src/data/iris2.csv"
-      download
-      class="btn btn-sm btn-outline-secondary w-100"
-    >
-      Download Iris CSV
-    </a>
-  </div>
-</div>
+          <!-- Download sample CSV -->
+          <div class="mt-2">
+            <a
+              href="./src/data/iris2.csv"
+              download
+              class="btn btn-sm btn-outline-secondary w-100"
+            >
+              Download Iris CSV
+            </a>
+          </div>
+        </div>
 
         <hr class="my-3" />
 
@@ -91,25 +93,140 @@
       </div>
     </aside>
 
-    <!-- RIGHT: OUTPUT (single section only) -->
+    <!-- RIGHT: OUTPUT (now split: output content -> console -> plots div) -->
     <section class="col-md-9 col-lg-10">
       <div class="output-panel">
-        <div id="rightData" class="mb-4"></div>
 
-        <div id="myPCA"></div>
-        <div id="myHclust"></div>
-        <div id="myHeatmap"></div>
+        <!-- Output panel (top) -->
+        <div id="rightData" class="panel-card mb-4"></div>
+
+        <!-- Embedded Console (below output panel) -->
+        <div id="consolePanel" class="mb-4">
+          <div id="consoleHeader">
+            <div class="fw-semibold">Console</div>
+            <div class="d-flex gap-2">
+              <button id="btnClearConsole" class="btn-console" type="button">Clear</button>
+              <button id="btnCopyConsole" class="btn-console" type="button">Copy</button>
+            </div>
+          </div>
+
+          <div id="consoleOut" aria-label="Embedded console output"></div>
+
+          <!-- Optional command input (press Enter to run) -->
+          <div id="consoleControls">
+            <input id="consoleCmd" type="text" placeholder="Type JS here and press Enter (demo only)" />
+          </div>
+        </div>
+
+        <!-- NEW: Plots wrapper (below console) -->
+        <div id="plotsPanel" class="panel-card">
+          <div id="myPCA"></div>
+          <div id="myHclust"></div>
+          <div id="myHeatmap"></div>
+
+          <!-- optional extra plot container you can target -->
+          <div id="myPlots"></div>
+        </div>
+
       </div>
     </section>
 
   </div>
 </main>
 
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Your existing modules -->
 <script type="module" src="./src/sdk.mjs"></script>
 <script type="module" src="./src/pca.mjs"></script>
 <script type="module" src="./main.js"></script>
+
+<!-- Embedded Console logic -->
+<script>
+  (function () {
+    const out = document.getElementById("consoleOut");
+    const cmd = document.getElementById("consoleCmd");
+    const btnClear = document.getElementById("btnClearConsole");
+    const btnCopy = document.getElementById("btnCopyConsole");
+
+    if (!out) return;
+
+    const fmt = (v) => {
+      if (v instanceof Error) return v.stack || v.message || String(v);
+      if (typeof v === "string") return v;
+      try { return JSON.stringify(v, null, 2); }
+      catch { return String(v); }
+    };
+
+    function writeLine(type, args) {
+      const line = document.createElement("div");
+      line.className = `c-line c-${type}`;
+      line.textContent = args.map(fmt).join(" ");
+      out.appendChild(line);
+      out.scrollTop = out.scrollHeight;
+    }
+
+    // Keep original console methods
+    const original = {
+      log: console.log.bind(console),
+      warn: console.warn.bind(console),
+      error: console.error.bind(console),
+      info: console.info ? console.info.bind(console) : console.log.bind(console)
+    };
+
+    // Patch console -> also write to embedded console
+    console.log = (...args) => { writeLine("log", args); original.log(...args); };
+    console.warn = (...args) => { writeLine("warn", args); original.warn(...args); };
+    console.error = (...args) => { writeLine("err", args); original.error(...args); };
+    if (console.info) {
+      console.info = (...args) => { writeLine("meta", args); original.info(...args); };
+    }
+
+    // Basic global error hooks
+    window.addEventListener("error", (e) => {
+      writeLine("err", [e.message || "Uncaught error", e.error || ""]);
+    });
+
+    window.addEventListener("unhandledrejection", (e) => {
+      writeLine("err", ["Unhandled promise rejection:", e.reason]);
+    });
+
+    // Clear / Copy
+    btnClear?.addEventListener("click", () => {
+      out.textContent = "";
+      writeLine("meta", ["Console cleared."]);
+    });
+
+    btnCopy?.addEventListener("click", async () => {
+      try {
+        const text = out.innerText || "";
+        await navigator.clipboard.writeText(text);
+        writeLine("meta", ["Copied console output to clipboard."]);
+      } catch (err) {
+        writeLine("err", ["Copy failed:", err]);
+      }
+    });
+
+    // Optional command input (demo only). WARNING: eval is unsafe for untrusted users.
+    cmd?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const code = cmd.value.trim();
+        if (!code) return;
+        writeLine("meta", [">", code]);
+        try {
+          const result = (0, eval)(code);
+          console.log(result);
+        } catch (err) {
+          console.error(err);
+        }
+        cmd.value = "";
+      }
+    });
+
+    // Smoke test
+    console.log("Embedded console ready.");
+  })();
+</script>
 
 </body>
 </html>

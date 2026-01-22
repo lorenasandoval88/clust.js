@@ -2,7 +2,6 @@ console.log("pca.mjs loaded")
 // TODO: limit textbox rows to 500
 // TODO: automate UI to apply to dendo and heatmap
 import {   removeNonNumberValues,  removeNumberValues,  scale} from './otherFunctions.js'
-// import {  npm_pca,   d3,  d3tip,  localforage} from './imports.js'
 
 import * as d3 from "d3";
 import d3tip from "d3-tip";
