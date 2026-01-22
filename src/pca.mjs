@@ -271,7 +271,7 @@ svg.attr("id", "svgid");
   //   console.log("pca() div without assigned id:", div)
   // }
   // console.log("pca_plot() div:",div)
-  return svg.node();
+  // return svg.node();
   let div;
 
   if (divid && document.getElementById(divid)) {
