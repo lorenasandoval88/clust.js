@@ -15,31 +15,21 @@ const pcaObj = { data: {}}
 // create button when UI function is called?, name divs by number
 const divNum = 1
 pcaObj.data.divNum = divNum
-console.log("pca pcaObj div #:", pcaObj.data.divNum)
+// console.log("pca pcaObj div #:", pcaObj.data.divNum)
 
 
 const pcaScores = async function (data) {
-  console.log("RUNNING pcaScores()-------------------------------")
+  // console.log("RUNNING pcaScores()-------------------------------")
 
   const numbersOnlyObjs = removeNonNumberValues(data)
-  // console.log("numbersOnlyObjs", numbersOnlyObjs)
-  const numbersOnlyArrs = (numbersOnlyObjs.map(Object.values))
-  //// console.log('numbersOnlyArrs',numbersOnlyArrs[0])  
 
-  const categories = (removeNumberValues(data)).map(x => Object.values(x)).flat()
-  //// console.log('categories',categories)  
-
-  // const headers = Object.keys(data[0]).filter(key => !isNaN(data[0][key]))
-  // // console.log('headers',headers)
   let scaledObjs = (await scale(numbersOnlyObjs))
   let scaledArr = scaledObjs.map(Object.values)
-  // console.log('scaledArr',scaledArr[0])  
 
   const pca = new PCA(scaledArr, {
     center: true,
     scale: true
   })
-
 
   const scores = pca.predict(scaledArr)
     .toJSON()
@@ -64,8 +54,6 @@ const pcaScores = async function (data) {
       group,
       name
     }))
-  // console.log("PCA1 and PC2 - getScores() (1st row):", scores[0])
-
   return scores
 }
 
@@ -92,7 +80,7 @@ function selectGroup(ctx, group, maxOpacity) {
 
 
 export async function pca_plot(options = {}) {
-  console.log("RUNNING pca_plot()-------------------------------")
+  console.log("RUNNING: pca_plot() function-------------------")
 
   const {
     divid: divid = undefined,
@@ -273,7 +261,7 @@ export async function pca_plot(options = {}) {
 
 
   }
-  console.log("pca_plot() end-----------------")
+  console.log("pca_plot() div:",div)
   return svg.node();
 }
 
