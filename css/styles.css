@@ -420,3 +420,22 @@ body {
     }
 
     .btn-console:hover { background: #152236; }
+
+.sdk-example {
+  background: #0b0f14;
+  color: #d7e2f0;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+  white-space: pre;
+}
+
+.sdk-example .title {
+  color: #8aa4c6;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+    

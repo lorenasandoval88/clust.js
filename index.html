@@ -141,6 +141,24 @@
 <script type="module" src="./dist/sdk.mjs"></script>
 <script type="module" src="./main.js"></script>
 
+
+<!-- SDK Usage Example -->
+<div id="sdkExample" class="sdk-example"></div>
+<script>
+  document.getElementById("sdkExample").innerHTML =
+`<div class="title">Select data/method above or type the following code into the console:</div>
+---------------------------------------------------
+(async () => {
+  const mod = await import("https://lorenasandoval88.github.io/clustjs/dist/sdk.mjs");
+  await mod.pca_plot({
+    data: yourDataArray,
+    divid: "yourDivId",
+    width: 600,
+    height: 400
+  });
+})();`;
+</script>
+
 <!-- Embedded Console logic -->
 <script>
   (function () {
