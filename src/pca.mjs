@@ -143,18 +143,24 @@ const y = d3.scaleLinear()
   .range([height - margin.bottom, margin.top])
 
 const yAxis = g => g
-  .attr("transform", `translate(${margin.left-5},0)`)
-  .call(d3.axisLeft(y))
+  .attr("transform", `translate(${margin.left - 5},0)`)
+  .call(d3.axisLeft(y).ticks(6).tickSizeOuter(0))
   .call(g => g.select(".domain")
     .attr("stroke", "#000")
     .attr("stroke-width", 1))
-  .call(g => g.select(".tick:last-of-type text").clone()
+  .call(g => g.selectAll(".tick line")
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1))
+  .call(g => g.selectAll(".tick text")
+    .attr("fill", "#000")
+    .style("font-size", "12px"))
+  .call(g => g.append("text")
     .attr("x", -margin.top)
-    .attr("y", -margin.top)
-    .attr("fill", "#000000")
-    .attr("text-anchor", "start")
+    .attr("y", margin.top - 5)
+    .attr("fill", "#000")
     .attr("font-weight", "bold")
-    .text("PC2"))
+    .attr("text-anchor", "start")
+    .text("PC2"));
 
 
   const svg = d3.create("svg")
@@ -252,26 +258,7 @@ svg.attr("id", "svgid");
     .style("font-size", "11px")
     .on("click", (event, d) => selectGroup(null, d, maxOpacity))
 
-
   // Here we add the pca svg to the document body or to a specific div if provided
-
-  // if (document.getElementById(divid)) {
-  //   console.log(`pcaPlot div provided in function parameters:`, divid);
-  //   const div = document.getElementById(divid)
-  //   div.innerHTML = ""
-  //   div.appendChild(svg.node())
-
-  // // } else if (!document.getElementById("childDiv")) {
-  // } else if (!document.getElementById(divid)) {
-  //   console.log(`pcaPlot div  NOT provided in function parameters or doesn't exist, creating div....`);
-  //   const div = document.createElement("div")
-
-  //   div.appendChild(svg.node());
-  //   document.body.appendChild(div);
-  //   console.log("pca() div without assigned id:", div)
-  // }
-  // console.log("pca_plot() div:",div)
-  // return svg.node();
   let div;
 
   if (divid && document.getElementById(divid)) {
