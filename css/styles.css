@@ -11,13 +11,7 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  margin: 0;
-  font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Helvetica, Arial, sans-serif;
-  background-color: #ffffff;
-  color: #212529;
-}
+
 
 /* =========================
    Typography
@@ -333,7 +327,7 @@ body {
 /* When plot exists, add this class to get white plot frame */
 #myPCA.has-plot{
   background: #ffffff;
-  color: #000000;
+  color: #ffffff;
   padding: 12px;
   width: 100%;
   overflow: auto;         /* allows scroll if needed */

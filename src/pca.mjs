@@ -244,26 +244,38 @@ export async function pca_plot(options = {}) {
 
   // Here we add the pca svg to the document body or to a specific div if provided
 
-  if (document.getElementById(divid)) {
-    console.log(`pcaPlot div provided in function parameters:`, divid);
-    const div = document.getElementById(divid)
-    div.innerHTML = ""
-    div.appendChild(svg.node())
+  // if (document.getElementById(divid)) {
+  //   console.log(`pcaPlot div provided in function parameters:`, divid);
+  //   const div = document.getElementById(divid)
+  //   div.innerHTML = ""
+  //   div.appendChild(svg.node())
 
-  // } else if (!document.getElementById("childDiv")) {
-  } else if (!document.getElementById(divid)) {
-    console.log(`pcaPlot div  NOT provided in function parameters or doesn't exist, creating div....`);
-    const div = document.createElement("div")
+  // // } else if (!document.getElementById("childDiv")) {
+  // } else if (!document.getElementById(divid)) {
+  //   console.log(`pcaPlot div  NOT provided in function parameters or doesn't exist, creating div....`);
+  //   const div = document.createElement("div")
 
-    div.appendChild(svg.node());
-    document.body.appendChild(div);
-    console.log("pca() div without assigned id:", div)
+  //   div.appendChild(svg.node());
+  //   document.body.appendChild(div);
+  //   console.log("pca() div without assigned id:", div)
+  // }
+  // console.log("pca_plot() div:",div)
+  // return svg.node();
+let div;
 
+if (divid && document.getElementById(divid)) {
+  console.log("pcaPlot div provided in function parameters:", divid);
+  div = document.getElementById(divid);
+  div.innerHTML = "";
+} else {
+  console.log("pcaPlot div NOT provided or doesn't exist; creating div...");
+  div = document.createElement("div");
+  document.body.appendChild(div);
+}
 
+div.appendChild(svg.node());
+console.log("pca() target div:", div);
 
-  }
-  console.log("pca_plot() div:",div)
-  return svg.node();
 }
 
 
