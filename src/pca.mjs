@@ -4,8 +4,9 @@
 // TODO: automate UI to apply to dendo and heatmap
 import {
   removeNonNumberValues,
-  removeNumberValues,
-  scale
+  scale,
+  csvToJson,
+  textBox
 } from './otherFunctions.js'
 
 import * as d3 from "d3";
@@ -17,14 +18,24 @@ import irisData from "./data/irisData.js";
 
 // import localforage from "localforage";  // only if you truly need it in SDK
 
-const pcaObj = {
-  data: {}
+const pcaDt = {
+  data: {
+    divNum: 1,
+    iris: {
+      json: irisData,
+      csv: null  // Will be generated on demand
+    },
+    file: {
+      json: null,
+      csv: null
+    }
+  }
 }
 
-// create button when UI function is called?, name divs by number
-const divNum = 1
-pcaObj.data.divNum = divNum
-// console.log("pca pcaObj div #:", pcaObj.data.divNum)
+// Generate CSV from iris JSON data
+const irisHeaders = Object.keys(irisData[0]);
+pcaDt.data.iris.csv = irisHeaders.join(',') + '\n' + 
+  irisData.map(row => irisHeaders.map(h => row[h]).join(',')).join('\n');
 
 
 const pcaScores = async function (data) {
@@ -85,8 +96,6 @@ function selectGroup(ctx, group, maxOpacity) {
   otherElements.transition().attr("opacity", maxOpacity);
   activeGroup.transition().attr("opacity", maxOpacity);
 }
-
-
 
 export async function pca_plot(options = {}) {
   console.log("RUNNING: pca_plot() function-------------------")
@@ -276,11 +285,220 @@ svg.attr("id", "svgid");
 
 }
 
-// export {  // pca
-//   pca_plot,
-// }
+// load file and plot PCA
+export const pca_UI = async (options = {}) => {
 
+  console.log("RUNNING pca_UI()-------------------------------");
+  console.log("pca UI div num", pcaDt.data.divNum);
 
+  const {
+    divid: divid = "",
+    width: width = 600,
+    height: height = 300,
+    colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
+    loadIrisOnStart: loadIrisOnStart = false
+  } = options;
+
+  const currentDivNum = pcaDt.data.divNum;
+  
+  let div = document.getElementById(divid);
+
+  if (divid && document.getElementById(divid)) {
+    console.log("pca_UI() div ID provided, loading div:", div);
+    // Clear existing content
+    div.innerHTML = "";
+  } else {
+    div = document.createElement("div");
+    div.id = divid || 'loadUI_' + currentDivNum;
+    div.style.alignContent = "center";
+    document.body.appendChild(div);
+    console.log("pca_UI() div NOT provided. creating div...", div);
+  }
+
+  // Create loading message div
+  const loadingDiv = document.createElement('div');
+  loadingDiv.id = 'loadingMessage_' + currentDivNum;
+  loadingDiv.style.display = 'none';
+  loadingDiv.style.padding = '10px';
+  loadingDiv.style.margin = '10px 0';
+  loadingDiv.style.backgroundColor = '#e3f2fd';
+  loadingDiv.style.border = '1px solid #2196F3';
+  loadingDiv.style.borderRadius = '4px';
+  loadingDiv.textContent = 'Processing data...';
+
+  // Create error message div
+  const errorDiv = document.createElement('div');
+  errorDiv.id = 'errorMessage_' + currentDivNum;
+  errorDiv.style.display = 'none';
+  errorDiv.style.padding = '10px';
+  errorDiv.style.margin = '10px 0';
+  errorDiv.style.backgroundColor = '#ffebee';
+  errorDiv.style.border = '1px solid #f44336';
+  errorDiv.style.borderRadius = '4px';
+  errorDiv.style.color = '#c62828';
+
+  // Iris data button
+  const irisDataButton = document.createElement('button');
+  irisDataButton.id = 'irisDataButton_' + currentDivNum;
+  irisDataButton.textContent = 'Load Iris Data';
+  irisDataButton.setAttribute('aria-label', 'Load built-in iris dataset');
+  irisDataButton.style.marginRight = '10px';
+  irisDataButton.style.padding = '5px 10px';
+  
+  // File input button
+  const fileInput = document.createElement('input');
+  fileInput.id = 'fileInput_' + currentDivNum;
+  fileInput.setAttribute('type', 'file');
+  fileInput.setAttribute('accept', '.csv');
+  fileInput.setAttribute('aria-label', 'Upload CSV file for PCA analysis');
+  
+  // File input label for accessibility
+  const fileLabel = document.createElement('label');
+  fileLabel.setAttribute('for', fileInput.id);
+  fileLabel.textContent = 'Or upload CSV file: ';
+  fileLabel.style.marginLeft = '10px';
+  
+  div.appendChild(irisDataButton);
+  div.appendChild(fileLabel);
+  div.appendChild(fileInput);
+  div.appendChild(document.createElement('br'));
+  div.appendChild(loadingDiv);
+  div.appendChild(errorDiv);
+  div.appendChild(document.createElement('br'));
+
+  // Create plot div
+  const plotDiv = document.createElement("div");
+  plotDiv.id = 'pcaplotDiv_' + currentDivNum;
+  div.appendChild(plotDiv);
+
+  // Create textbox div
+  const textBoxDiv = document.createElement("div");
+  textBoxDiv.id = 'textBoxDiv_' + currentDivNum;
+  textBoxDiv.style.alignContent = "center";
+  div.appendChild(textBoxDiv);
+
+  // Helper function to show loading state
+  const showLoading = () => {
+    loadingDiv.style.display = 'block';
+    errorDiv.style.display = 'none';
+  };
+
+  // Helper function to hide loading state
+  const hideLoading = () => {
+    loadingDiv.style.display = 'none';
+  };
+
+  // Helper function to show error
+  const showError = (message) => {
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    loadingDiv.style.display = 'none';
+  };
+
+  // Helper function to validate and render data
+  const renderData = async (json, csv) => {
+    try {
+      showLoading();
+      
+      // Validate that data has numeric columns
+      const numericData = removeNonNumberValues(json);
+      if (numericData.length === 0 || Object.keys(numericData[0]).length === 0) {
+        throw new Error('No numeric columns found in data. PCA requires numeric data.');
+      }
+
+      // Clear previous content
+      plotDiv.innerHTML = '';
+      textBoxDiv.innerHTML = '';
+
+      // PCA plot and text box with options
+      await pca_plot({
+        data: json, 
+        divid: plotDiv.id,
+        width: width,
+        height: height,
+        colors: colors
+      });
+      
+      await textBox({text: csv, divid: textBoxDiv.id});
+      
+      hideLoading();
+    } catch (error) {
+      console.error('Error rendering data:', error);
+      showError(`Error: ${error.message}`);
+    }
+  };
+
+  // Event listener for file input (remove old listener if exists)
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    console.log(currentDivNum, "fileInput button clicked!");
+
+    // Validate file type
+    if (!file.name.endsWith('.csv')) {
+      showError('Please upload a CSV file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    
+    reader.onload = async function (e) {
+      try {
+        const csv = e.target.result;
+        
+        // Validate CSV is not empty
+        if (!csv || csv.trim().length === 0) {
+          throw new Error('File is empty.');
+        }
+        
+        const json = await csvToJson(csv);
+        
+        // Validate JSON data
+        if (!json || json.length === 0) {
+          throw new Error('No valid data found in CSV file.');
+        }
+
+        // Store data
+        pcaDt.data.file.json = json;
+        pcaDt.data.file.csv = csv;
+
+        await renderData(json, csv);
+      } catch (error) {
+        console.error('Error processing file:', error);
+        showError(`Error processing file: ${error.message}`);
+      }
+    };
+    
+    reader.onerror = function () {
+      showError('Error reading the file. Please try again.');
+    };
+    
+    reader.readAsText(file);
+  };
+
+  // Remove old event listener if it exists and add new one
+  fileInput.removeEventListener('change', handleFileChange);
+  fileInput.addEventListener('change', handleFileChange);
+
+  // Event listener for iris data button
+  const handleIrisClick = async function () {
+    console.log(currentDivNum, "load iris data button clicked!");
+    await renderData(pcaDt.data.iris.json, pcaDt.data.iris.csv);
+  };
+
+  irisDataButton.removeEventListener('click', handleIrisClick);
+  irisDataButton.addEventListener('click', handleIrisClick);
+
+  // Load iris data on initialization if requested
+  if (loadIrisOnStart) {
+    await renderData(pcaDt.data.iris.json, pcaDt.data.iris.csv);
+  }
+
+  pcaDt.data.divNum += 1;
+
+  return div;
+}
 
 
 
