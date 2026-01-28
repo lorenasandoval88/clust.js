@@ -1,5 +1,104 @@
 import {irisData,pca_plot } from "./dist/sdk.mjs"; // adjust path
 
+// ======== EMBEDDED CONSOLE ========
+const consoleOut = document.getElementById("consoleOut");
+
+// Save original console methods
+const originalConsole = {
+  log: console.log.bind(console),
+  warn: console.warn.bind(console),
+  error: console.error.bind(console)
+};
+
+// Function to display messages in custom console
+function displayInConsole(args, type = "log") {
+  if (!consoleOut) return;
+  
+  const line = document.createElement("div");
+  line.className = `c-line c-${type}`;
+  
+  const text = args.map(arg => {
+    if (typeof arg === 'object' && arg !== null) {
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch (e) {
+        return String(arg);
+      }
+    }
+    return String(arg);
+  }).join(' ');
+  
+  line.textContent = text;
+  consoleOut.appendChild(line);
+  consoleOut.scrollTop = consoleOut.scrollHeight;
+}
+
+// Override console methods
+console.log = (...args) => {
+  originalConsole.log(...args);
+  displayInConsole(args, 'log');
+};
+
+console.warn = (...args) => {
+  originalConsole.warn(...args);
+  displayInConsole(args, 'warn');
+};
+
+console.error = (...args) => {
+  originalConsole.error(...args);
+  displayInConsole(args, 'err');
+};
+
+// Console controls
+document.getElementById("btnClearConsole")?.addEventListener("click", () => {
+  if (consoleOut) consoleOut.innerHTML = "";
+});
+
+document.getElementById("btnCopyConsole")?.addEventListener("click", () => {
+  if (consoleOut) {
+    navigator.clipboard.writeText(consoleOut.textContent)
+      .then(() => displayInConsole(['📋 Copied to clipboard'], 'meta'))
+      .catch(() => displayInConsole(['Failed to copy'], 'err'));
+  }
+});
+
+// Console command input with AsyncFunction support
+document.getElementById("consoleCmd")?.addEventListener("keydown", async (e) => {
+  if (e.key === "Enter") {
+    const cmd = e.target.value.trim();
+    if (!cmd) return;
+    
+    displayInConsole([`> ${cmd}`], 'meta');
+    
+    try {
+      // Create an async function that can use await
+      const AsyncFunction = async function(){}.constructor;
+      
+      // Try as expression first (with return)
+      let result;
+      try {
+        result = await AsyncFunction(`return (${cmd})`)();
+      } catch (e1) {
+        // If that fails, try as statement (without return)
+        try {
+          result = await AsyncFunction(cmd)();
+        } catch (e2) {
+          // If both fail, throw the original error
+          throw e1;
+        }
+      }
+      
+      if (result !== undefined) {
+        console.log(result);
+      }
+    } catch (err) {
+      console.error(err.message);
+    }
+    
+    e.target.value = "";
+  }
+});
+
 // ======== APP STATE (GUI controls update this) ========
 const appState = {
   data: null,         // array of objects (rows)
