@@ -286,7 +286,7 @@ svg.attr("id", "svgid");
 }
 
 // load file and plot PCA
-export const pca_UI = async (options = {}) => {
+export async function pca_UI(options = {}) {
 
   console.log("RUNNING pca_UI()-------------------------------");
   console.log("pca UI div num", pcaDt.data.divNum);
