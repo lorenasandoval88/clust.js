@@ -221,12 +221,13 @@ svg.attr("id", "svgid");
     .style('padding', '8px 12px')
     .style('font-family', fontFamily)
     .style('font-size', '12px')
-    .style('white-space', 'nowrap')
+    .style('max-width', '250px')
+    .style('width', 'auto')
     .html((event, d) => `
-          <div style='text-align: center'>
-            name: ${d.name}<br/>
-            pc1: ${d.PC1.toFixed(2)}<br/>
-            pc2: ${d.PC2.toFixed(2)}
+          <div style='line-height: 1.5;'>
+            <div><strong>Name:</strong> ${d.name}</div>
+            <div><strong>PC1:</strong> ${d.PC1.toFixed(2)}</div>
+            <div><strong>PC2:</strong> ${d.PC2.toFixed(2)}</div>
           </div>`)
 
   // Apply tooltip to our SVG
