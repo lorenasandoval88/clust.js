@@ -1,7 +1,7 @@
 # Welcome to clustJs!
 
 
-Multivariate statistical visualization (clustering, correlation, heatmaps, etc) in JavaScript. 
+Multivariate statistical visualization (PCA, t-SNE, UMAP, clustering, heatmaps, etc) in JavaScript. 
 
 live at: https://lorenasandoval88.github.io/clustjs
 

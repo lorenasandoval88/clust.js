@@ -1,7 +1,7 @@
 # Clust.js AI Agent Instructions
 
 ## Project Overview
-**Clust.js** is a JavaScript library for multivariate statistical visualization (clustering, correlation, heatmaps, PCA) leveraging D3.js and machine learning libraries. The project exports visualization components via an ES module SDK that can be imported directly from CDN.
+**Clust.js** is a JavaScript library for multivariate statistical visualization (PCA, t-SNE, UMAP, clustering, heatmaps) leveraging D3.js and machine learning libraries. The project exports visualization components via an ES module SDK that can be imported directly from CDN.
 
 ## Architecture
 
@@ -11,8 +11,10 @@
   - `src/index.js` — Local development exports (pca, heatmap, hclust)
 - **Visualization Components**:
   - `src/pca.mjs` — PCA plot UI and calculations (uses `ml-pca` library)
-  - `src/heatmap.js` — Heatmap visualization (currently empty, placeholder)
-  - `src/hclust.js` — Hierarchical clustering (currently empty, placeholder)
+  - `src/tsne.js` — t-SNE dimensionality reduction (placeholder)
+  - `src/umap.js` — UMAP dimensionality reduction (placeholder)
+  - `src/heatmap.js` — Heatmap visualization (placeholder)
+  - `src/hclust.js` — Hierarchical clustering (placeholder)
 - **Utilities**:
   - `src/otherFunctions.js` — Data transformation (CSV parsing, number/category separation, scaling)
   - `src/imports.js` — CDN import aggregation (D3, Plotly, ml-pca, ml-hclust, localforage)
@@ -90,6 +92,8 @@ This enables dynamic imports while maintaining ES module compatibility.
 | File | Purpose | Status |
 |------|---------|--------|
 | [src/pca.mjs](src/pca.mjs) | PCA visualization + calculations | Active |
+| [src/tsne.js](src/tsne.js) | t-SNE dimensionality reduction | Placeholder (empty) |
+| [src/umap.js](src/umap.js) | UMAP dimensionality reduction | Placeholder (empty) |
 | [src/otherFunctions.js](src/otherFunctions.js) | Data transformation utilities | Active |
 | [src/heatmap.js](src/heatmap.js) | Heatmap component | Placeholder (empty) |
 | [src/hclust.js](src/hclust.js) | Hierarchical clustering | Placeholder (empty) |
