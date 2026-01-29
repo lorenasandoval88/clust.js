@@ -277,9 +277,13 @@ svg.attr("id", "svgid");
     div = document.getElementById(divid);
     div.innerHTML = "";
   } else {
-    console.log("div NOT provided in optionsor doesn't exist; creating a new div with id: ",divid);
     div = document.createElement("div");
+    div.id = divid || 'pca_plot' + currentDivNum;
+console.log(currentDivNum)
+    console.log("div NOT provided within function options or doesn't exist... created a new div with id: ",div.id, "and appended to document body!");
+
     document.body.appendChild(div);
+    
   }
 
   div.appendChild(svg.node());
@@ -310,10 +314,11 @@ export async function pca_UI(options = {}) {
     div.innerHTML = "";
   } else {
     div = document.createElement("div");
-    div.id = divid || 'loadUI_' + currentDivNum;
+    div.id = divid || 'pca_UI_' + currentDivNum;
+    console.log("div NOT provided within function options or doesn't exist... created a new div with id: ",divid, "and appended to document body!");
+
     div.style.alignContent = "center";
     document.body.appendChild(div);
-    console.log("pca_UI() div NOT provided. creating div...", div);
   }
 
   // Create loading message div
