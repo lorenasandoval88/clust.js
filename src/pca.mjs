@@ -51,29 +51,14 @@ const pcaScores = async function (data) {
     scale: true
   })
 
-  const scores = pca.predict(scaledArr)
-    .toJSON()
-    .map((row, rowIndex) => {
-      const columns = Object.keys(data[rowIndex]);
-      const rowObj = {
-        group: data[rowIndex]['species'],
-        name: "id_" + rowIndex //data[rowIndex]['id']
-      };
-      columns.forEach((column, colIndex) => {
-        rowObj[`PC${colIndex + 1}`] = row[colIndex];
-      });
-      return rowObj;
-    }).map(({
-      PC1,
-      PC2,
-      group,
-      name
-    }) => ({
-      PC1,
-      PC2,
-      group,
-      name
-    }))
+  // Efficiently extract only the first two principal components (PC1, PC2)
+  const scoresArray = pca.predict(scaledArr).toJSON();
+  const scores = scoresArray.map((row, rowIndex) => ({
+    group: data[rowIndex]?.species,
+    name: "id_" + rowIndex,
+    PC1: row[0],
+    PC2: row[1]
+  }));
   return scores
 }
 
@@ -101,32 +86,27 @@ export async function pca_plot(options = {}) {
   console.log("RUNNING: pca_plot() function----------")
 
   const {
-    divid: divid = undefined,
+    divid: divid = "",
     data: data = irisData, 
     width: width = 600,
     height: height = 300,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
   } = options;
 
-    // Here we add the pca svg to the document body or to a specific div if provided
-  let div;
 
-  if (divid && document.getElementById(divid)) {
+  // Resolve target container and avoid redundant lookups
+  let div = divid ? document.getElementById(divid) : null;
+  if (div) {
     console.log("pcaPlot div provided in function parameters:", divid);
-    div = document.getElementById(divid);
     div.innerHTML = "";
   } else {
-    div = document.createElement("div");
     const currentDivNum = pcaDt.data.divNum;
-
+    div = document.createElement("div");
     div.id = divid || 'pca_plot' + currentDivNum;
-        console.log("^^^^^^^^^^^^^^^^^^^^")
-
-    console.log("currentDivNum",currentDivNum)
-    console.log("div NOT provided within function options or doesn't exist... created a new div with id: ",div.id, "and appended to document body!");
-
+    console.log("currentDivNum", currentDivNum);
+    console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", div.id, "and appended to document body!");
     document.body.appendChild(div);
-    
+    pcaDt.data.divNum = currentDivNum + 1;
   }
 
   const scores = await pcaScores(data)
@@ -142,8 +122,12 @@ export async function pca_plot(options = {}) {
     bottom: 45,
     left: 45
   })
-  const paddedMin = d3.min(scores, d => d.PC1) - d3.min(scores, d => d.PC1) * -0.10
-  const paddedMax = d3.max(scores, d => d.PC1) + d3.max(scores, d => d.PC1) * 0.10
+  // Compute padded domain once using the range for better performance and clarity
+  const minPC1 = d3.min(scores, d => d.PC1);
+  const maxPC1 = d3.max(scores, d => d.PC1);
+  const rangePC1 = maxPC1 - minPC1;
+  const paddedMin = minPC1 - rangePC1 * 0.10;
+  const paddedMax = maxPC1 + rangePC1 * 0.10;
   const x = d3.scaleLinear()
     .domain([paddedMin, paddedMax])
     .range([margin.left, width - margin.right])
@@ -232,7 +216,7 @@ svg.attr("id", "svgid");
     .attr("fill", "white")
     .on("click", (event, d) => selectGroup(null, d, maxOpacity));
 
-  const gPoints = g.append("g").attr("class", "gPoints");
+  const gPoints = g.append("g").attr("class", "gPoints").style("isolation", "isolate");
 
   const tooltip = d3tip()
     .style('border', 'solid 2px navy')
@@ -253,12 +237,11 @@ svg.attr("id", "svgid");
 
   // Apply tooltip to our SVG
   svg.call(tooltip)
-  gPoints.selectAll()
-  g.append("g")
-    .style("isolation", "isolate")
+  gPoints
     .selectAll("circle")
     .data(scores)
-    .enter().append("circle")
+    .enter()
+    .append("circle")
     .attr("class", "points")
     .attr("cx", d => x(d.PC1))
     .attr("cy", d => y(d.PC2))
@@ -295,34 +278,37 @@ svg.attr("id", "svgid");
 
 // load file and plot PCA
 export async function pca_UI(options = {}) {
+    console.log("RUNNING pca_UI()-------------------------------");
+    console.log("pca UI div num", pcaDt.data.divNum);
 
-  console.log("RUNNING pca_UI()-------------------------------");
-  console.log("pca UI div num", pcaDt.data.divNum);
+    const {
+      divid: divid = "",
+      width: width = 600,
+      height: height = 300,
+      colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
+      loadIrisOnStart: loadIrisOnStart = false
+    } = options;
 
-  const {
-    divid: divid = "",
-    width: width = 600,
-    height: height = 300,
-    colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
-    loadIrisOnStart: loadIrisOnStart = false
-  } = options;
 
-  const currentDivNum = pcaDt.data.divNum;
-  
-  let div = document.getElementById(divid);
+    // Here we add the pca svg to the document body or to a specific div if provided
+    let div = document.getElementById(divid);
 
-  if (divid && document.getElementById(divid)) {
-    console.log("pca_UI() div ID provided, loading div:", div);
-    // Clear existing content
-    div.innerHTML = "";
-  } else {
-    div = document.createElement("div");
-    div.id = divid || 'pca_UI_' + currentDivNum;
-    console.log("div NOT provided within function options or doesn't exist... created a new div with id: ",divid, "and appended to document body!");
+    if (divid && document.getElementById(divid)) {
+      console.log("pca_UI() div ID provided, loading div:", div);
+      // Clear existing content
+      div.innerHTML = "";
+    } else {
+      const currentDivNum = pcaDt.data.divNum;
 
-    div.style.alignContent = "center";
-    document.body.appendChild(div);
-  }
+      div = document.createElement("div");
+      div.id = divid || 'pca_UI_' + currentDivNum;
+      console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", divid, "and appended to document body!");
+
+      div.style.alignContent = "center";
+      document.body.appendChild(div);
+      pcaDt.data.divNum = currentDivNum + 1;
+
+    }
 
   // Create loading message div
   const loadingDiv = document.createElement('div');
