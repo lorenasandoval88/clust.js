@@ -112,10 +112,34 @@
             document.getElementById("sdkExample").innerHTML =
               `<div class="title">Select data & tool (left) or run the following in the console:</div>
 <div class="small text-muted mb-2">One-liner:</div>
-<pre><code>await (await import("https://lorenasandoval88.github.io/clustjs/dist/sdk.mjs")).pca_plot({ width: 600, height: 400 })</code></pre>
+<div class="d-flex align-items-start gap-2 mb-2">
+  <pre class="mb-0"><code id="sdkOneLiner">await (await import("https://lorenasandoval88.github.io/clustjs/dist/sdk.mjs")).pca_plot({ width: 600, height: 400 })</code></pre>
+  <button id="copySdkOneLinerBtn" class="btn btn-sm btn-outline-secondary" type="button">Copy</button>
+</div>
 <div class="small text-muted mb-2">Step-by-step (enter each line):</div>
 <pre><code>const { pca_plot } = await import("https://lorenasandoval88.github.io/clustjs/dist/sdk.mjs")
 await pca_plot({ width: 600, height: 400 })</code></pre>`;
+
+            // Copy button for one-liner snippet
+            (function() {
+              const btn = document.getElementById("copySdkOneLinerBtn");
+              const codeEl = document.getElementById("sdkOneLiner");
+              if (!btn || !codeEl) return;
+              btn.addEventListener("click", async () => {
+                const text = codeEl.textContent || "";
+                try {
+                  await navigator.clipboard.writeText(text);
+                  btn.textContent = "Copied!";
+                } catch (_) {
+                  const ta = document.createElement("textarea");
+                  ta.value = text;
+                  document.body.appendChild(ta);
+                  ta.select();
+                  try { document.execCommand("copy"); btn.textContent = "Copied!"; } finally { document.body.removeChild(ta); }
+                }
+                setTimeout(() => { btn.textContent = "Copy"; }, 1500);
+              });
+            })();
           </script>
           <!-- Embedded Console (below SDK example) -->
           <div id="consolePanel" class="mb-4">
