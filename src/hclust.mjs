@@ -162,9 +162,19 @@ export async function hclust_plot(options = {}) {
 // observable plot d3 to do
 
 
-    const g = svg
+    svg
+        .attr('width', width)
+        .attr('height', height);
+
+    // Solid white background to ensure white behind dendrograms/heatmap
+    svg.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
         .attr('width', width)
         .attr('height', height)
+        .attr('fill', '#ffffff');
+
+    const g = svg
         .append('g')
         // move the entire graph down and right to accomodate labels
         .attr('transform', `translate(${margin.left+margin.right}, ${margin.top+margin.bottom})`)
@@ -182,6 +192,7 @@ export async function hclust_plot(options = {}) {
         .attr("dy", "1.1em")
         .attr("transform", "rotate(-90)")
         .attr("class", "xa")
+        .style("fill", "#000")
 
     //text y axis
     let yAxis = g.append('g')
@@ -194,6 +205,7 @@ export async function hclust_plot(options = {}) {
         .attr("dx", "2px")
         .attr("dy", "0.3em")
         .attr("class", "yaa")
+        .style("fill", "#000")
 
     const gPoints = g.append("g").attr("class", "gPoints");
 

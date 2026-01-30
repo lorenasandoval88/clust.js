@@ -1,4 +1,4 @@
-import {irisData,pca_plot } from "./dist/sdk.mjs"; // adjust path
+import { irisData, pca_plot, hclust_plot } from "./dist/sdk.mjs"; // adjust path
 
 // ======== EMBEDDED CONSOLE ========
 const consoleOut = document.getElementById("consoleOut");
@@ -433,4 +433,50 @@ const el = document.getElementById("myPCA");
 });
 
 
-  //await pca_plot({})
+// ======== HCLUST: CLICK TOOL BUTTON ========
+document.getElementById("btnHclust")?.addEventListener("click", async () => {
+  const data = appState.data;
+
+  if (!data || data.length === 0) {
+    const rightPanel = document.getElementById("rightData");
+    if (rightPanel) {
+      rightPanel.innerHTML = `
+        <div class="text-muted">
+          Load a file or select a built-in dataset (Iris) first.
+        </div>
+      `;
+    }
+    return;
+  }
+
+  const el = document.getElementById("myHclust");
+  if (!el) return;
+
+  const width = Math.max(520, el.clientWidth - 24);
+  const height = 600;
+
+  // Derive numeric columns and labels
+  const sample = data[0] || {};
+  const keys = Object.keys(sample);
+  const numericKeys = keys.filter(k => typeof sample[k] === "number");
+  const labelKey = keys.find(k => typeof sample[k] !== "number");
+
+  const colnames = numericKeys.length ? numericKeys : keys.filter(k => k !== labelKey);
+  const matrix = data.map(row => colnames.map(k => row[k])).filter(row => row.every(v => typeof v === "number" && Number.isFinite(v)));
+  const rownames = data.map((row, idx) => (labelKey ? String(row[labelKey]) : "row") + idx);
+
+  // Clear and mark container
+  el.innerHTML = "";
+  el.classList.add("has-plot");
+
+  await hclust_plot({
+    divid: "myHclust",
+    matrix,
+    rownames,
+    colnames,
+    width,
+    height,
+    clusterCols: true,
+    clusterRows: true
+  });
+});
