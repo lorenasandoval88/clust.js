@@ -279,35 +279,29 @@ svg.attr("id", "svgid");
 // load file and plot PCA
 export async function pca_UI(options = {}) {
     console.log("RUNNING pca_UI()-------------------------------");
-    console.log("pca UI div num", pcaDt.data.divNum);
 
-    const {
-      divid: divid = "",
-      width: width = 600,
-      height: height = 300,
-      colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
-      loadIrisOnStart: loadIrisOnStart = false
-    } = options;
+  const {
+    divid: divid = "",
+    data: data = irisData, 
+    width: width = 600,
+    height: height = 300,
+    colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
+  } = options;
 
 
-    // Here we add the pca svg to the document body or to a specific div if provided
-    let div = document.getElementById(divid);
-
-    if (divid && document.getElementById(divid)) {
-      console.log("pca_UI() div ID provided, loading div:", div);
-      // Clear existing content
-      div.innerHTML = "";
-    } else {
+  // use the div provided in the function call or create a new one
+  // Resolve target container and avoid redundant lookups
+  let div = divid ? document.getElementById(divid) : null;
+  if (div) {
+    console.log("pca_UI() div provided in function parameters:", divid);
+    div.innerHTML = "";
+  } else {
       const currentDivNum = pcaDt.data.divNum;
-
       div = document.createElement("div");
       div.id = divid || 'pca_UI_' + currentDivNum;
       console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", divid, "and appended to document body!");
-
-      div.style.alignContent = "center";
       document.body.appendChild(div);
       pcaDt.data.divNum = currentDivNum + 1;
-
     }
 
   // Create loading message div
