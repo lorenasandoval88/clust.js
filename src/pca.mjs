@@ -97,13 +97,12 @@ export async function pca_plot(options = {}) {
   // Resolve target container and avoid redundant lookups
   let div = divid ? document.getElementById(divid) : null;
   if (div) {
-    console.log("pcaPlot div provided in function parameters:", divid);
+    console.log("div provided in function parameters:", divid);
     div.innerHTML = "";
   } else {
     const currentDivNum = pcaDt.data.divNum;
     div = document.createElement("div");
     div.id = divid || 'pca_plot' + currentDivNum;
-    console.log("currentDivNum", currentDivNum);
     console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", div.id, "and appended to document body!");
     document.body.appendChild(div);
     pcaDt.data.divNum = currentDivNum + 1;
@@ -295,13 +294,11 @@ export async function pca_UI(options = {}) {
   const currentDivNum = pcaDt.data.divNum;
   let div = divid ? document.getElementById(divid) : null;
   if (div) {
-    console.log("pca_UI() div provided in function parameters:", divid);
+    console.log("div provided in function parameters:", divid);
     div.innerHTML = "";
   } else {
       div = document.createElement("div");
       div.id = divid || 'pca_UI' + currentDivNum;
-      console.log("div.id",div.id)
-      console.log("currentDivNum", currentDivNum);
       console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", div.id, "and appended to document body!");
       document.body.appendChild(div);
       pcaDt.data.divNum = currentDivNum + 1;
