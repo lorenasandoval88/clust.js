@@ -29,229 +29,7 @@ function trimText(idx, arr) {
     })
 }
 
-//-----------------------------------------------------------------------------------
-export async function hclust_UI(options = {}) {
-    console.log("RUNNING hclust_UI()-------------------------------");
-    console.log("hclust UI div num", hclustDt.data.divNum)
 
-  const {
-    divid: divid = "",
-    //todo: add textbox opyions, height width color etc
-  } = options
-
-  let div = document.getElementById(divid);
-    if (document.getElementById(divid)) {
-    // The div with the specified ID exists, updating...
-    console.log("hclust_UI() div ID provided, loading div:", div);
-    // div.id = 'loadUI'
-
-  } else {
-    console.log("hclust_UI() div NOT provided. creating div...", div);
-    // create the div element here
-    div = document.createElement("div")
-    div.id = 'loadUI' + (hclustDt.data.divNum)
-    div.style.alignContent = "center"
-    document.body.appendChild(div);
-    console.log("hclust_UI() div NOT provided. creating div...", div);
-  }
-
-  // iris data button 
-  const irisDataButton = document.createElement('button')
-  irisDataButton.id = 'irisDataButton'+(hclustDt.data.divNum)
-  irisDataButton.textContent = 'Load Iris Data'
-  div.appendChild(irisDataButton);
-  console.log("hclustUI: irisDataButton:", document.getElementById(irisDataButton.id))
-
-  // file input Button
-  const fileInput = document.createElement('input')
-  fileInput.id = 'fileInput'+(hclustDt.data.divNum)
-  fileInput.setAttribute('type', 'file')
-  div.appendChild(fileInput);
-  div.append(document.createElement('br'));
-  div.append(document.createElement('br'));
-
-
-
-  // create plot div
-  const plotDiv = document.createElement("div")
-  plotDiv.id = 'hcplotDiv'+(hclustDt.data.divNum)//'hcplotDiv'
-  div.appendChild(plotDiv);
-  console.log("hclustUI: plotDiv:", document.getElementById(plotDiv.id))
-
-  // create textbox div
-  const textBoxDiv = document.createElement("div")
-  textBoxDiv.id = 'textBoxDiv'+(hclustDt.data.divNum)
-  textBoxDiv.style.alignContent = "center"
-  div.appendChild(textBoxDiv);
-  console.log("hclustUI: textBoxDiv:", document.getElementById(textBoxDiv.id))
-
-  // event listener for load file data buttons
-  fileInput.addEventListener('change', (event) => {
-  
-      console.log(hclustDt.data.divNum,"fileInput button clicked!")
-  
-      const files = event.target.files;
-      for (const file of files) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const file = event.target.files[0]
-          if (file) {
-            const reader = new FileReader();
-  
-            reader.onload = async function (e) {
-              const csv = e.target.result;
-              const json = await csvToJson(csv)
-  
-              console.log("hclustDt.data.divNum", hclustDt.data.divNum)
-  
-              const matrix = (json.map(Object.values))
-              matrix['headers'] = json['headers']
-  
-              hclustDt.data.file = []
-              hclustDt.data.file.json = json
-              hclustDt.data.file.csv = csv
-  
-        // hclust plot and cluster by row/col buttons 
-            
-        let clusterRows = false
-        let clusterCols = false
-
-        // cluster row button 
-        if (!document.getElementById('rowCluster'+(hclustDt.data.divNum))) {
-            let clusterRows = true
-
-            console.log("*********",!document.getElementById('rowCluster'+(hclustDt.data.divNum)))
-            const rowClusterButton = document.createElement('button')
-            rowClusterButton.id = 'rowCluster'+(hclustDt.data.divNum)
-            rowClusterButton.textContent = 'Cluster by Rows'
-            div.appendChild(rowClusterButton);
-            console.log("hclustUI: rowCluster:", document.getElementById(rowClusterButton.id))
-
-            // cluster col Button
-            const colClusterButton = document.createElement('button')
-            colClusterButton.id = 'colCluster'+(hclustDt.data.divNum)
-            colClusterButton.textContent = 'Cluster by Columns'
-            div.appendChild(colClusterButton);
-            div.append(document.createElement('br'));
-            div.append(document.createElement('br'));
-        }
-
-        console.log("load iris data button for Hclust clicked!")
-
-            hclust_plot({
-            matrix:  hclustDt.data.file.json.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),//numbers only, no species,
-            rownames:  hclustDt.data.file.json.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
-            colnames:   Object.keys(hclustDt.data.file.json[0]).slice(0, -1),
-            divid: plotDiv.id,
-            clusterCols: false,
-            clusterRows: false
-        })              
-            // textBox({text: csv, divid: textBoxDiv.id})
-       
-            };
-            reader.onerror = function () {
-              displayError('Error reading the file.');
-            };
-            reader.readAsText(file);
-          }
-  
-  
-        };
-        reader.readAsText(file); // Read as text, other options are readAsArrayBuffer, readAsDataURL
-      }
-  
-    });
-     // event listener for load iris data button
-      document.getElementById(irisDataButton.id).addEventListener('click', async function () {
-        let clusterRows = false
-        let clusterCols = false
-
-        // cluster row button 
-        if (!document.getElementById('rowCluster'+(hclustDt.data.divNum))) {
-            let clusterRows = true
-
-            console.log("*********",!document.getElementById('rowCluster'+(hclustDt.data.divNum)))
-            const rowClusterButton = document.createElement('button')
-            rowClusterButton.id = 'rowCluster'+(hclustDt.data.divNum)
-            rowClusterButton.textContent = 'Cluster by Rows'
-            div.appendChild(rowClusterButton);
-            console.log("hclustUI: rowCluster:", document.getElementById(rowClusterButton.id))
-
-            // cluster col Button
-            const colClusterButton = document.createElement('button')
-            colClusterButton.id = 'colCluster'+(hclustDt.data.divNum)
-            colClusterButton.textContent = 'Cluster by Columns'
-            div.appendChild(colClusterButton);
-            div.append(document.createElement('br'));
-            div.append(document.createElement('br'));
-        }
-
-        console.log("load iris data button for Hclust clicked!")
-    
-        //TO DO: fix add file button. The cluster button revert to the load iris data
-         // hclust plot and text box
-        hclust_plot({
-            matrix:  hclustDt.data.iris.json.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),//numbers only, no species,
-            rownames:  hclustDt.data.iris.json.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
-            colnames:   Object.keys(hclustDt.data.iris.json[0]).slice(0, -1),
-            divid: plotDiv.id, 
-            clusterCols: clusterCols,
-            clusterRows: clusterRows
-
-        })
-        // textBox({ text: hclustDt.data.iris.csv, divid: textBoxDiv.id})
-
-        document.getElementById('rowCluster'+(hclustDt.data.divNum)).addEventListener('click', async function () {
-            console.log(document.getElementById('rowCluster'+(hclustDt.data.divNum)))
-            console.log("clusterRows",clusterRows)
-
-        if(clusterRows == false){
-            clusterRows = true
-        } else if(clusterRows == true){
-            clusterRows = false
-        }
-         console.log("clusterRows",clusterRows)
-            hclust_plot({
-                        matrix:  hclustDt.data.iris.json.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),//numbers only, no species,
-                        rownames:  hclustDt.data.iris.json.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
-                        colnames:   Object.keys(hclustDt.data.iris.json[0]).slice(0, -1),
-                        divid: plotDiv.id, 
-                        clusterCols: clusterCols,
-                        clusterRows: clusterRows
-                    })
-      })
-
-        document.getElementById('colCluster'+(hclustDt.data.divNum)).addEventListener('click', async function () {
-        console.log(document.getElementById('colCluster'+(hclustDt.data.divNum)))
-         console.log("clusterCols",clusterCols)
-
-        if(clusterCols == false){
-            clusterCols = true
-        } else if(clusterCols == true){
-            clusterCols = false
-        }
-         console.log("clusterCols",clusterCols)
-
-        hclust_plot({
-                    matrix:  hclustDt.data.iris.json.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),//numbers only, no species,
-                    rownames:  hclustDt.data.iris.json.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
-                    colnames:   Object.keys(hclustDt.data.iris.json[0]).slice(0, -1),
-                    divid: plotDiv.id, 
-                    clusterCols: clusterCols,
-                    clusterRows: clusterRows
-                })
-      })
-    
-      });
-
-      console.log(`rowCluster${(hclustDt.data.divNum)}`)
-
-      console.log(document.getElementById(`rowCluster${(hclustDt.data.divNum)}`))
-
-
-        hclustDt.data.divNum += 1
-
-}
 //-----------------------------------------------------------------------------------
 
 
@@ -260,9 +38,9 @@ export async function hclust_plot(options = {}) {
 
     const {
         divid: divid = "",
-        matrix: matrix = hclustDt.data.iris.numbers,//numbers only, no species,
-        rownames: rownames = hclustDt.data.iris.values.map((d, idx) => d[4] + idx),
-        colnames: colnames = hclustDt.data.iris.features,
+    matrix: matrix = irisData.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),
+    rownames: rownames = irisData.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
+    colnames: colnames = Object.keys(irisData[0]).slice(0, -1),
         width: width = 400,
         height: height = 1200,
         // dendograms
@@ -598,4 +376,229 @@ if (clusterCols== true){
    // console.log("svg", svg.node())
 
     return svg.node()
+}
+
+
+//-----------------------------------------------------------------------------------
+export async function hclust_UI(options = {}) {
+    console.log("RUNNING hclust_UI()-------------------------------");
+    console.log("hclust UI div num", hclustDt.data.divNum)
+
+  const {
+    divid: divid = "",
+    //todo: add textbox opyions, height width color etc
+  } = options
+
+  let div = document.getElementById(divid);
+    if (document.getElementById(divid)) {
+    // The div with the specified ID exists, updating...
+    console.log("hclust_UI() div ID provided, loading div:", div);
+    // div.id = 'loadUI'
+
+  } else {
+    console.log("hclust_UI() div NOT provided. creating div...", div);
+    // create the div element here
+    div = document.createElement("div")
+    div.id = 'loadUI' + (hclustDt.data.divNum)
+    div.style.alignContent = "center"
+    document.body.appendChild(div);
+    console.log("hclust_UI() div NOT provided. creating div...", div);
+  }
+
+  // iris data button 
+  const irisDataButton = document.createElement('button')
+  irisDataButton.id = 'irisDataButton'+(hclustDt.data.divNum)
+  irisDataButton.textContent = 'Load Iris Data'
+  div.appendChild(irisDataButton);
+  console.log("hclustUI: irisDataButton:", document.getElementById(irisDataButton.id))
+
+  // file input Button
+  const fileInput = document.createElement('input')
+  fileInput.id = 'fileInput'+(hclustDt.data.divNum)
+  fileInput.setAttribute('type', 'file')
+  div.appendChild(fileInput);
+  div.append(document.createElement('br'));
+  div.append(document.createElement('br'));
+
+
+
+  // create plot div
+  const plotDiv = document.createElement("div")
+  plotDiv.id = 'hcplotDiv'+(hclustDt.data.divNum)//'hcplotDiv'
+  div.appendChild(plotDiv);
+  console.log("hclustUI: plotDiv:", document.getElementById(plotDiv.id))
+
+  // create textbox div
+  const textBoxDiv = document.createElement("div")
+  textBoxDiv.id = 'textBoxDiv'+(hclustDt.data.divNum)
+  textBoxDiv.style.alignContent = "center"
+  div.appendChild(textBoxDiv);
+  console.log("hclustUI: textBoxDiv:", document.getElementById(textBoxDiv.id))
+
+  // event listener for load file data buttons
+  fileInput.addEventListener('change', (event) => {
+  
+      console.log(hclustDt.data.divNum,"fileInput button clicked!")
+  
+      const files = event.target.files;
+      for (const file of files) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const file = event.target.files[0]
+          if (file) {
+            const reader = new FileReader();
+  
+            reader.onload = async function (e) {
+              const csv = e.target.result;
+              const json = await csvToJson(csv)
+  
+              console.log("hclustDt.data.divNum", hclustDt.data.divNum)
+  
+              const matrix = (json.map(Object.values))
+              matrix['headers'] = json['headers']
+  
+              hclustDt.data.file = []
+              hclustDt.data.file.json = json
+              hclustDt.data.file.csv = csv
+  
+        // hclust plot and cluster by row/col buttons 
+            
+        let clusterRows = false
+        let clusterCols = false
+
+        // cluster row button 
+        if (!document.getElementById('rowCluster'+(hclustDt.data.divNum))) {
+            let clusterRows = true
+
+            console.log("*********",!document.getElementById('rowCluster'+(hclustDt.data.divNum)))
+            const rowClusterButton = document.createElement('button')
+            rowClusterButton.id = 'rowCluster'+(hclustDt.data.divNum)
+            rowClusterButton.textContent = 'Cluster by Rows'
+            div.appendChild(rowClusterButton);
+            console.log("hclustUI: rowCluster:", document.getElementById(rowClusterButton.id))
+
+            // cluster col Button
+            const colClusterButton = document.createElement('button')
+            colClusterButton.id = 'colCluster'+(hclustDt.data.divNum)
+            colClusterButton.textContent = 'Cluster by Columns'
+            div.appendChild(colClusterButton);
+            div.append(document.createElement('br'));
+            div.append(document.createElement('br'));
+        }
+
+        console.log("load iris data button for Hclust clicked!")
+
+            hclust_plot({
+            matrix:  hclustDt.data.file.json.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),//numbers only, no species,
+            rownames:  hclustDt.data.file.json.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
+            colnames:   Object.keys(hclustDt.data.file.json[0]).slice(0, -1),
+            divid: plotDiv.id,
+            clusterCols: false,
+            clusterRows: false
+        })              
+            // textBox({text: csv, divid: textBoxDiv.id})
+       
+            };
+            reader.onerror = function () {
+              displayError('Error reading the file.');
+            };
+            reader.readAsText(file);
+          }
+  
+  
+        };
+        reader.readAsText(file); // Read as text, other options are readAsArrayBuffer, readAsDataURL
+      }
+  
+    });
+     // event listener for load iris data button
+      document.getElementById(irisDataButton.id).addEventListener('click', async function () {
+        let clusterRows = false
+        let clusterCols = false
+
+        // cluster row button 
+        if (!document.getElementById('rowCluster'+(hclustDt.data.divNum))) {
+            let clusterRows = true
+
+            console.log("*********",!document.getElementById('rowCluster'+(hclustDt.data.divNum)))
+            const rowClusterButton = document.createElement('button')
+            rowClusterButton.id = 'rowCluster'+(hclustDt.data.divNum)
+            rowClusterButton.textContent = 'Cluster by Rows'
+            div.appendChild(rowClusterButton);
+            console.log("hclustUI: rowCluster:", document.getElementById(rowClusterButton.id))
+
+            // cluster col Button
+            const colClusterButton = document.createElement('button')
+            colClusterButton.id = 'colCluster'+(hclustDt.data.divNum)
+            colClusterButton.textContent = 'Cluster by Columns'
+            div.appendChild(colClusterButton);
+            div.append(document.createElement('br'));
+            div.append(document.createElement('br'));
+        }
+
+        console.log("load iris data button for Hclust clicked!")
+    
+        //TO DO: fix add file button. The cluster button revert to the load iris data
+         // hclust plot and text box
+        hclust_plot({
+            matrix:  irisData.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),
+            rownames:  irisData.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
+            colnames:   Object.keys(irisData[0]).slice(0, -1),
+            divid: plotDiv.id, 
+            clusterCols: clusterCols,
+            clusterRows: clusterRows
+
+        })
+        // textBox({ text: hclustDt.data.iris.csv, divid: textBoxDiv.id})
+
+        document.getElementById('rowCluster'+(hclustDt.data.divNum)).addEventListener('click', async function () {
+            console.log(document.getElementById('rowCluster'+(hclustDt.data.divNum)))
+            console.log("clusterRows",clusterRows)
+
+        if(clusterRows == false){
+            clusterRows = true
+        } else if(clusterRows == true){
+            clusterRows = false
+        }
+         console.log("clusterRows",clusterRows)
+            hclust_plot({
+                        matrix:  irisData.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),
+                        rownames:  irisData.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
+                        colnames:   Object.keys(irisData[0]).slice(0, -1),
+                        divid: plotDiv.id, 
+                        clusterCols: clusterCols,
+                        clusterRows: clusterRows
+                    })
+      })
+
+        document.getElementById('colCluster'+(hclustDt.data.divNum)).addEventListener('click', async function () {
+        console.log(document.getElementById('colCluster'+(hclustDt.data.divNum)))
+         console.log("clusterCols",clusterCols)
+
+        if(clusterCols == false){
+            clusterCols = true
+        } else if(clusterCols == true){
+            clusterCols = false
+        }
+         console.log("clusterCols",clusterCols)
+
+        hclust_plot({
+                    matrix:  irisData.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),
+                    rownames:  irisData.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
+                    colnames:   Object.keys(irisData[0]).slice(0, -1),
+                    divid: plotDiv.id, 
+                    clusterCols: clusterCols,
+                    clusterRows: clusterRows
+                })
+      })
+    
+      });
+
+      console.log(`rowCluster${(hclustDt.data.divNum)}`)
+
+      console.log(document.getElementById(`rowCluster${(hclustDt.data.divNum)}`))
+
+
+        hclustDt.data.divNum += 1
+
 }
