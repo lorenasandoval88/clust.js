@@ -142,9 +142,18 @@
   <pre class="mb-0"><code id="sdkOneLiner">await (await import("https://lorenasandoval88.github.io/clustjs/dist/sdk.mjs")).pca_plot({ width: 600, height: 400 })</code></pre>
   <button id="copySdkOneLinerBtn" class="btn btn-sm btn-outline-secondary" type="button">Copy</button>
 </div>
+
 <div class="small text-muted mb-2">Step-by-step (enter each line):</div>
 <pre><code>const sdk = await import("https://lorenasandoval88.github.io/clustjs/dist/sdk.mjs")
-await sdk.pca_plot({ width: 600, height: 400 })</code></pre>`;
+await sdk.pca_plot({ width: 600, height: 400 })</code></pre>
+
+<div class="small text-muted mb-2">Localhost One-liner:</div>
+<div class="d-flex align-items-start gap-2 mb-2">
+  <pre class="mb-0"><code id="sdkOneLiner">await (await import("./dist/sdk.mjs")).hclust_plot({ width: 600, height: 400 })</code></pre>
+  <button id="copySdkOneLinerBtn" class="btn btn-sm btn-outline-secondary" type="button">Copy</button>
+</div>`;
+
+
 
     // Copy button for the explicit one-liner snippet
     (function() {
