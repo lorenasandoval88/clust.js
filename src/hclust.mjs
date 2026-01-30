@@ -1,6 +1,8 @@
 import * as d3 from "d3";
 import d3tip from "d3-tip";
+import * as hclust from "ml-hclust";
 import irisData from "./data/irisData.js";
+import { csvToJson } from "./otherFunctions.js";
 
 const hclustDt = {
   data: {
@@ -28,9 +30,6 @@ function trimText(idx, arr) {
         }
     })
 }
-
-
-//-----------------------------------------------------------------------------------
 
 
 export async function hclust_plot(options = {}) {
