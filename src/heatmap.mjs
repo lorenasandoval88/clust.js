@@ -22,6 +22,7 @@ const buildData = async function(matrix)  {
 
 export async function  heatmap_plot(options = {}){
   // console.log("heatmap options", options)
+console.log("RUNNING heatmap_plot()----------------------");
 
   const {
     divid: divid = "",
