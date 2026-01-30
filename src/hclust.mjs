@@ -212,6 +212,7 @@ export async function hclust_plot(options = {}) {
         .style('background-color', 'white')
         .style('border-radius', '10px')
         .style('float', 'left')
+        .style('color', '#000')
         .style('font-family', tooltip_fontFamily)
         .html((event, d) => `
         <div style='float: right'>
@@ -246,6 +247,7 @@ export async function hclust_plot(options = {}) {
     .style('background-color', 'white')
     .style('border-radius', '9px')
     .style('float', 'left')
+    .style('color', '#000')
     .style('font-family', tooltip_fontFamily)
     .style('font-size', tooltip_fontSize)
     .html((event, d) => `
