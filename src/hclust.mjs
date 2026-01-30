@@ -20,6 +20,21 @@ const hclustDt = {
   }
 }
 
+
+// heatmap auxiliary functions, convert a matrix to a data array
+const buildData = async function (matrix) {
+    let array = []
+    d3.range(matrix.length).map((d) => {
+        const o = d3.range(matrix[0].length).map((t) => ({
+            t: t,
+            n: d,
+            value: matrix[d][t]
+        }))
+        array = [...array, ...o]
+    })
+    return array
+}
+
 const transpose = m => m[0].map((x, i) => m.map(x => x[i]))
 
 // trim label lengths if they are greater than 8 characters
