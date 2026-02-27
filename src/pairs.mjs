@@ -260,6 +260,7 @@ export async function pairs_plot(options = {}) {
     .on("click", (event, d) => selectGroup(null, d, maxOpacity));
 
   div.appendChild(svg.node());
+  return svg.node();
 }
 
 export async function pairs_UI(options = {}) {

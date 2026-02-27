@@ -260,6 +260,7 @@ export async function tsne_plot(options = {}) {
     .on("click", (event, d) => selectGroup(null, d, maxOpacity));
 
   div.appendChild(svg.node());
+  return svg.node();
 
   function selectGroup(ctx, group, maxOpacity) {
     const groupElements = d3.selectAll(".points")

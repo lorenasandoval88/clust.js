@@ -244,6 +244,7 @@ export async function scatter_plot(options = {}) {
     .on("click", (event, d) => selectGroup(null, d, maxOpacity));
 
   div.appendChild(svg.node());
+  return svg.node();
 }
 
 export const scatter_UI = async (options = {}) => {
