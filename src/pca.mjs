@@ -277,7 +277,8 @@ svg.attr("id", "svgid");
     .style("font-size", "14px")
     .on("click", (event, d) => selectGroup(null, d, maxOpacity))
 
-  div.appendChild(svg.node());
+  div.appendChild(svg.node());// todo remove
+  return svg.node();
 }
 
 // load file and plot PCA
