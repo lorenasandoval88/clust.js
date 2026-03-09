@@ -51,3 +51,39 @@ await pca_UI({ divid: "myPCA", width: 600, height: 300, loadIrisOnStart: true })
 
 
 Further documentation can be found on the [wiki](https://github.com/lorenasandoval88/clustjs/wiki).
+
+## Project Structure
+
+### Architecture
+
+- `index.html`: browser demo shell and layout.
+- `main.js`: demo app wiring (imports SDK from `./dist/sdk.mjs`, runs plots, console UI helpers).
+- `src/`: reusable source modules for plots and helpers.
+- `src/sdk.mjs`: public SDK source entrypoint (aggregates dataset + plot + utility exports).
+- `src/data/`: built-in datasets (`irisData`, `spiralData`).
+- `css/styles.css`: demo styling.
+- `dist/`: Rollup output (`dist/sdk.mjs` + sourcemap).
+
+### Build
+
+Run `npm run build` to generate `dist/sdk.mjs` from `src/sdk.mjs`.
+
+### Run
+
+Open `index.html` with a local static server (for example VS Code Live Server). The demo script `main.js` loads the built SDK from `./dist/sdk.mjs`.
+
+### SDK API
+
+Public exports from `src/sdk.mjs`:
+
+- Datasets: `irisData`, `spiralData`
+- Plots/UI/state:
+    - `hclust_plot`, `hclust_UI`, `hclustDt`
+    - `pca_plot`, `pca_UI`, `pcaDt`
+    - `tsne_plot`, `tsne_UI`, `tsneDt`
+    - `umap_plot`, `umap_UI`, `umapDt`
+    - `scatter_plot`, `scatter_UI`, `scatterDt`
+    - `pairs_plot`, `pairs_UI`, `pairsDt`
+    - `heatmap_plot`
+- Utilities: all exports from `otherFunctions.js` (via `export *`)
+- Metadata: `version`
