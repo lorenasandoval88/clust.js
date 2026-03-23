@@ -52,6 +52,56 @@ export const hclustDt = {
 
 const transpose = m => m[0].map((x, i) => m.map(x => x[i])) // for dendograms
 
+const toFiniteNumber = value => {
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : null;
+    }
+
+    if (typeof value === "string" && value.trim() !== "") {
+        const parsedValue = Number(value);
+        return Number.isFinite(parsedValue) ? parsedValue : null;
+    }
+
+    return null;
+}
+
+const normalizeHclustInput = ({
+    data,
+    rowNames,
+    colNames
+}) => {
+    if (!Array.isArray(data) || data.length === 0) {
+        throw new Error("hclust_plot() requires a non-empty data array.");
+    }
+
+    if (Array.isArray(data[0])) {
+        return {
+            data,
+            rowNames,
+            colNames
+        };
+    }
+
+    if (typeof data[0] !== "object" || data[0] === null) {
+        throw new Error("hclust_plot() data must be an array of arrays or an array of objects.");
+    }
+
+    const keys = Object.keys(data[0]);
+    const numericColumnNames = keys.filter(key => data.every(row => toFiniteNumber(row[key]) !== null));
+
+    if (numericColumnNames.length === 0) {
+        throw new Error("hclust_plot() could not find any numeric columns in the provided data.");
+    }
+
+    const textColumnName = keys.find(key => data.some(row => typeof row[key] === "string" && row[key].trim() !== ""));
+
+    return {
+        data: data.map(row => numericColumnNames.map(key => toFiniteNumber(row[key]))),
+        rowNames: rowNames ?? (textColumnName ? data.map((row, idx) => `${row[textColumnName]}${idx}`) : rowNames),
+        colNames: colNames ?? numericColumnNames
+    };
+}
+
 // trim label lengths if they are greater than 8 characters
 // function trimText(idx, arr) {
 //     return idx.map(e => {
@@ -70,9 +120,9 @@ export async function hclust_plot(options = {}) {
 
     const {
         divid: divid = "",
-        data: data = irisData.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),
-        rowNames: rowNames = irisData.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
-        colNames: colNames = Object.keys(irisData[0]).slice(0, -1),
+        data: rawData = irisData,
+        rowNames: inputRowNames,
+        colNames: inputColNames,
         width: width = 600,
         height: height = 1500,
         // dendograms
@@ -101,6 +151,16 @@ export async function hclust_plot(options = {}) {
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
         tooltip_fontSize: tooltip_fontSize = '14px',
     } = options;
+
+    const {
+        data,
+        rowNames,
+        colNames
+    } = normalizeHclustInput({
+        data: rawData,
+        rowNames: inputRowNames,
+        colNames: inputColNames
+    });
 
 
     // 'data' is now the main matrix input
