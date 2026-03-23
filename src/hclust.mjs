@@ -104,7 +104,7 @@ export async function hclust_plot(options = {}) {
 
 
     // 'data' is now the main matrix input
-
+    console.log("hclust_plot() data:", data)
     // dendograms--------------------
     const colHclustTree = new hclust.agnes(dist(transpose(data), distance[clusteringDistanceCols]), {
         method: clusteringMethodCols,
