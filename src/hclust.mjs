@@ -282,6 +282,7 @@ export async function hclust_plot(options = {}) {
         colNames: colNamesClust,
         width: width - margin.left,
         height: height - margin.top,
+        legendOffsetX: 20,
     });
     // Append myNewPlot inside the main 'g' group so it aligns perfectly
     if (myNewPlot) {

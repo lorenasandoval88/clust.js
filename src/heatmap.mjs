@@ -46,6 +46,7 @@ export async function heatmap_plot(options = {}) {
     marginBottom: marginBottom = 0,
     marginLeft: marginLeft = 0,
     marginRight: marginRight = 0,
+    legendOffsetX: legendOffsetX = 0,
 
     colorScale: colorScale = null,
          // hover tooltip
@@ -227,7 +228,7 @@ export async function heatmap_plot(options = {}) {
      // Color legend on the right side (START)
     const legendWidth = 30;
     const legendHeight = Math.max(innerHeight / 2, 60); // Half the heatmap height, minimum 60px
-    const legendX = innerWidth + margin.right/2; // Position after right axis labels
+    const legendX = innerWidth + margin.right/2 + legendOffsetX; // Position after right axis labels
     console.log("margin.right:", margin.right)
     // Move legend one fourth of the heatmap (inner) height down
     const legendY = innerHeight / 3;//0
