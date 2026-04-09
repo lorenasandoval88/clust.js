@@ -270,25 +270,15 @@ if (typeof colorScale === "function") {
         .attr("y2", "0%"); // top (high values)
 
     // Derive legend colors from colorScale if provided, otherwise use color array
-    let legendColors;
-    if (typeof colorScale === "function" && typeof colorScale.range === "function") {
-        const r = colorScale.range();
-        legendColors = [r[0], r[Math.floor(r.length / 2)] ?? r[0], r[r.length - 1]];
-    } else {
-        legendColors = color;
-    }
+ const numStops = 20;
+for (let i = 0; i <= numStops; i++) {
+  const t = i / numStops;
+  const value = derivedScale[0] + t * (derivedScale[1] - derivedScale[0]);
 
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", legendColors[0]); // low
-
-    gradient.append("stop")
-        .attr("offset", "50%")
-        .attr("stop-color", legendColors[1]); // middle
-
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", legendColors[2]); // high
+  gradient.append("stop")
+    .attr("offset", `${t * 100}%`)
+    .attr("stop-color", color_scale(value));
+}
 
     // Draw gradient rectangle
     g.append("rect")
