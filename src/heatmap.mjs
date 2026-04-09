@@ -57,20 +57,37 @@ export async function heatmap_plot(options = {}) {
   } = options
 
   // start of heatmap
-  const flatValues = data.flat().filter(v => Number.isFinite(v));
-  let derivedScale = colorScale;
-  if (!Array.isArray(derivedScale) || derivedScale.length !== 2 || !derivedScale.every(Number.isFinite)) {
-    const extent = d3.extent(flatValues);
-    if (extent[0] === extent[1]) {
-      derivedScale = [extent[0] ?? 0, (extent[1] ?? 0) + 1];
-    } else {
-      derivedScale = extent;
-    }
-  }
+// exclude display-only missing marker (-1) from numeric scale/legend
+const flatValues = data.flat().filter(v => Number.isFinite(v) && v !== -1);
 
-  const midVal = (derivedScale[0] + derivedScale[1]) / 2;
-  const color_scale = d3.scaleLinear()
-    .domain([derivedScale[0], midVal, derivedScale[1]])
+// support either a D3 scale function or a numeric [min, max] domain
+let derivedScale;
+
+if (typeof colorScale === "function" && typeof colorScale.domain === "function") {
+  const d = colorScale.domain();
+  derivedScale = [d[0], d[d.length - 1]];
+} else if (
+  Array.isArray(colorScale) &&
+  colorScale.length === 2 &&
+  colorScale.every(Number.isFinite)
+) {
+  derivedScale = colorScale;
+} else {
+  const extent = d3.extent(flatValues);
+  if (extent[0] === extent[1]) {
+    derivedScale = [extent[0] ?? 0, (extent[1] ?? 0) + 1];
+  } else {
+    derivedScale = extent;
+  }
+}
+
+const midVal = (derivedScale[0] + derivedScale[1]) / 2;
+
+const color_scale =
+  typeof colorScale === "function"
+    ? colorScale
+    : d3.scaleLinear()
+        .domain([derivedScale[0], midVal, derivedScale[1]])
     .range(color) // navy (low) - white (middle) - red (high)
 
   // bottom labels: Calculate font size as half the heatmap cell width
@@ -307,7 +324,7 @@ export async function heatmap_plot(options = {}) {
     legendAxisG.selectAll("path")
         .style("stroke", "#000");
 
-        
+
 // small black box labeled “Missing”:
 g.append("rect")
   .attr("x", legendX)
