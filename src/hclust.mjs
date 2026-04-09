@@ -143,8 +143,8 @@ export async function hclust_plot(options = {}) {
         colDendoColor: colDendoColor = "black",
         // bottomdendogram color
         rowDendoColor: rowDendoColor = "black",
-        // heatmap color
-        heatmapColor: heatmapColor = "green",
+        // heatmap color (array of 3 colors: low, middle, high)
+        heatmapColor: heatmapColor = ['#000080', '#ffffff', '#d73027'],
         heatmapColorScale: heatmapColorScale = null,
         // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
@@ -369,6 +369,7 @@ export async function hclust_plot(options = {}) {
         root.links().forEach((link, i) => {
             svg
                 .append("path")
+                .datum(link)
                 .attr("class", "link")
                 .attr("stroke", link.source.color || `${colDendoColor}`)
                 .attr("stroke-width", `${3}px`)
@@ -433,6 +434,7 @@ export async function hclust_plot(options = {}) {
         root2.links().forEach((link, i) => {
             svg
                 .append("path")
+                .datum(link)
                 .attr("class", "link")
                 .attr("stroke", link.source.color || `${rowDendoColor}`)
                 .attr("stroke-width", `${3}px`)
