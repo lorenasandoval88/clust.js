@@ -41,7 +41,7 @@ export async function heatmap_plot(options = {}) {
     colNames: colNames = Object.keys(irisData[0]).slice(0, -1),
     height: height = 900,
     width: width = 400,
-    color: color = ['#000080', '#ffffff', '#d73027'], // navy (low) - white (middle) - red (high)//'#000080', //"#d62728",
+    color: inputColor = null, // array of 3 colors: [low, middle, high]
     marginTop: marginTop = 0,
     marginBottom: marginBottom = 0,
     marginLeft: marginLeft = 0,
@@ -56,39 +56,37 @@ export async function heatmap_plot(options = {}) {
 
   } = options
 
-  // start of heatmap
-// exclude display-only missing marker (-1) from numeric scale/legend
-const flatValues = data.flat().filter(v => Number.isFinite(v) && v !== -1);
+  // Default color palette: navy (low) → white (middle) → red (high)
+  const color = inputColor ?? ['#000080', '#ffffff', '#d73027'];
 
-// support either a D3 scale function or a numeric [min, max] domain
+  // start of heatmap
+let color_scale;
 let derivedScale;
 
-if (typeof colorScale === "function" && typeof colorScale.domain === "function") {
+// If user provides full scale → use it directly
+if (typeof colorScale === "function") {
+  color_scale = colorScale;
+
   const d = colorScale.domain();
   derivedScale = [d[0], d[d.length - 1]];
-} else if (
-  Array.isArray(colorScale) &&
-  colorScale.length === 2 &&
-  colorScale.every(Number.isFinite)
-) {
-  derivedScale = colorScale;
+
 } else {
+  // exclude missing
+  const flatValues = data.flat().filter(v => Number.isFinite(v) && v !== -1);
+
   const extent = d3.extent(flatValues);
-  if (extent[0] === extent[1]) {
-    derivedScale = [extent[0] ?? 0, (extent[1] ?? 0) + 1];
-  } else {
-    derivedScale = extent;
-  }
+
+  derivedScale =
+    extent[0] === extent[1]
+      ? [extent[0] ?? 0, (extent[1] ?? 0) + 1]
+      : extent;
+
+  const midVal = (derivedScale[0] + derivedScale[1]) / 2;
+
+  color_scale = d3.scaleLinear()
+    .domain([derivedScale[0], midVal, derivedScale[1]])
+    .range(color);
 }
-
-const midVal = (derivedScale[0] + derivedScale[1]) / 2;
-
-const color_scale =
-  typeof colorScale === "function"
-    ? colorScale
-    : d3.scaleLinear()
-        .domain([derivedScale[0], midVal, derivedScale[1]])
-    .range(color) // navy (low) - white (middle) - red (high)
 
   // bottom labels: Calculate font size as half the heatmap cell width
   const cellWidth = (width - marginLeft - marginRight ) / data[0].length;
@@ -271,17 +269,26 @@ const color_scale =
         .attr("x2", "0%")
         .attr("y2", "0%"); // top (high values)
 
+    // Derive legend colors from colorScale if provided, otherwise use color array
+    let legendColors;
+    if (typeof colorScale === "function" && typeof colorScale.range === "function") {
+        const r = colorScale.range();
+        legendColors = [r[0], r[Math.floor(r.length / 2)] ?? r[0], r[r.length - 1]];
+    } else {
+        legendColors = color;
+    }
+
     gradient.append("stop")
         .attr("offset", "0%")
-        .attr("stop-color", color[0]); // low
+        .attr("stop-color", legendColors[0]); // low
 
     gradient.append("stop")
         .attr("offset", "50%")
-        .attr("stop-color", color[1]); // middle
+        .attr("stop-color", legendColors[1]); // middle
 
     gradient.append("stop")
         .attr("offset", "100%")
-        .attr("stop-color", color[2]); // high
+        .attr("stop-color", legendColors[2]); // high
 
     // Draw gradient rectangle
     g.append("rect")
