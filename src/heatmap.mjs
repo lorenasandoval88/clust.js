@@ -210,6 +210,12 @@ export async function heatmap_plot(options = {}) {
 
   const gPoints = g.append("g").attr("class", "gPoints");
 
+
+  function getHeatmapColor(v, color_scale) {
+  if (v === -1 || !Number.isFinite(v)) return "#000000";
+  return color_scale(v);
+}
+
   gPoints.selectAll()
     .data(heatMapData)
     .enter()
@@ -218,7 +224,7 @@ export async function heatmap_plot(options = {}) {
     .attr('y', (d) => y_scale(d.n))
     .attr('width', x_scale.bandwidth())
     .attr('height', y_scale.bandwidth())
-    .attr('fill', (d) => color_scale(d.value))
+    .attr('fill', (d) => getHeatmapColor(d.value, color_scale))
     // show the tooltip when "mouseover"
     .on('mouseover', tooltip.show)
     // Hide the tooltip when "mouseout"
@@ -301,6 +307,21 @@ export async function heatmap_plot(options = {}) {
     legendAxisG.selectAll("path")
         .style("stroke", "#000");
 
+        
+// small black box labeled “Missing”:
+g.append("rect")
+  .attr("x", legendX)
+  .attr("y", legendY + legendHeight + 20)
+  .attr("width", 15)
+  .attr("height", 15)
+  .attr("fill", "#000000");
+
+g.append("text")
+  .attr("x", legendX + 20)
+  .attr("y", legendY + legendHeight + 32)
+  .text("Missing")
+  .style("font-size", "12px")
+  .style("fill", "#000");
 
     // Color legend on the right side (END)
 // END HEATMAP #########################################

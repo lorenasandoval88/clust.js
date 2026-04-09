@@ -121,6 +121,7 @@ export async function hclust_plot(options = {}) {
     const {
         divid: divid = "",
         data: rawData = irisData,
+        displayData: rawDisplayData = null,
         rowNames: inputRowNames,
         colNames: inputColNames,
         width: width = 600,
@@ -152,6 +153,8 @@ export async function hclust_plot(options = {}) {
         tooltip_fontSize: tooltip_fontSize = '14px',
     } = options;
 
+
+    //Normalize both matrices to ensure they are in the correct format and dimensions match. 'data' is used for clustering and 'displayData' is used for the heatmap (can be the same as 'data' if 'displayData' is not provided).
     const {
         data,
         rowNames,
@@ -162,6 +165,21 @@ export async function hclust_plot(options = {}) {
         colNames: inputColNames
     });
 
+    const {
+        data: displayData
+    } = normalizeHclustInput({
+        data: rawDisplayData ?? rawData,
+        rowNames: inputRowNames,
+        colNames: inputColNames
+    });
+
+    //Validate dimensions match
+    if (
+        displayData.length !== data.length ||
+        displayData[0]?.length !== data[0]?.length
+    ) {
+        throw new Error("displayData must have the same dimensions as data");
+    }
 
     // 'data' is now the main matrix input
     console.log("hclust_plot() data:", data)
@@ -191,7 +209,12 @@ export async function hclust_plot(options = {}) {
     console.log("colIdx", colIdx)
     let rowIdx = clusterRows ? root2.leaves().map(x => x.data.index) : d3.range(data.length) //row clust
     console.log("rowIdx", rowIdx)
-    const newMatrix2 = transpose(colIdx.map(i => transpose(rowIdx.map(e => data[e]))[i]))
+
+
+    const clusteredMatrix = transpose(    colIdx.map(i => transpose(rowIdx.map(e => data[e]))[i]));
+
+    const displayMatrix = transpose(    colIdx.map(i => transpose(rowIdx.map(e => displayData[e]))[i]));
+
     // reorder col/row Names according to clustering order, else return numeric indices [0,1,2,3...]
     let colNamesClust = colNames ? colIdx.map(i => colNames[i]) : Array.from(new Array(data[0].length), (x, i) => i + 1)
     let rowNamesClust = rowNames ? rowIdx.map(i => rowNames[i]) : Array.from(new Array(data.length), (x, i) => i + 1)
@@ -276,16 +299,17 @@ export async function hclust_plot(options = {}) {
 
 
     // Heatmap #2: we create a new heatmap with the clustered data and append it to the main 'g' group
-    let myNewPlot = await heatmap_plot({
-        data: newMatrix2, // TODO: define names and matrix as one json input
-        rowNames: rowNamesClust,
-        colNames: colNamesClust,
-        width: width - margin.left,
-        height: height - margin.top,
-        legendOffsetX: 20,
-        color: heatmapColor,
-        colorScale: heatmapColorScale
-    });
+ let myNewPlot = await heatmap_plot({
+    data: displayMatrix,
+    rowNames: rowNamesClust,
+    colNames: colNamesClust,
+    width: width - margin.left,
+    height: height - margin.top,
+    legendOffsetX: 20,
+    color: heatmapColor,
+    colorScale: heatmapColorScale
+});
+
     // Append myNewPlot inside the main 'g' group so it aligns perfectly
     if (myNewPlot) {
         g.node().appendChild(myNewPlot);
