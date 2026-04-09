@@ -205,10 +205,10 @@ export async function hclust_plot(options = {}) {
     clusterLayout2(root2)
 
     let colIdx = clusterCols ? root.leaves().map(x => x.data.index) : d3.range(data[0].length) //col clust
-    console.log("*****************************")
-    console.log("colIdx", colIdx)
+    // console.log("*****************************")
+    // console.log("colIdx", colIdx)
     let rowIdx = clusterRows ? root2.leaves().map(x => x.data.index) : d3.range(data.length) //row clust
-    console.log("rowIdx", rowIdx)
+    // console.log("rowIdx", rowIdx)
 
 
     const clusteredMatrix = transpose(    colIdx.map(i => transpose(rowIdx.map(e => data[e]))[i]));
@@ -218,8 +218,8 @@ export async function hclust_plot(options = {}) {
     // reorder col/row Names according to clustering order, else return numeric indices [0,1,2,3...]
     let colNamesClust = colNames ? colIdx.map(i => colNames[i]) : Array.from(new Array(data[0].length), (x, i) => i + 1)
     let rowNamesClust = rowNames ? rowIdx.map(i => rowNames[i]) : Array.from(new Array(data.length), (x, i) => i + 1)
-    console.log("colNamesClust", colNamesClust)
-    console.log("rowNamesClust", rowNamesClust)
+    // console.log("colNamesClust", colNamesClust)
+    // console.log("rowNamesClust", rowNamesClust)
 
 
 
