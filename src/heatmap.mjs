@@ -250,7 +250,7 @@ if (typeof colorScale === "function") {
     const legendWidth = 30;
     const legendHeight = Math.max(innerHeight / 2, 60); // Half the heatmap height, minimum 60px
     const legendX = innerWidth + margin.right/2 + legendOffsetX; // Position after right axis labels
-    console.log("margin.right:", margin.right)
+    // console.log("margin.right:", margin.right)
     // Move legend one fourth of the heatmap (inner) height down
     const legendY = innerHeight / 3;//0
 
