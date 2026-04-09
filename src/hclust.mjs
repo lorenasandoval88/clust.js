@@ -283,6 +283,8 @@ export async function hclust_plot(options = {}) {
         width: width - margin.left,
         height: height - margin.top,
         legendOffsetX: 20,
+        color: heatmapColor,
+        colorScale: heatmapColorScale
     });
     // Append myNewPlot inside the main 'g' group so it aligns perfectly
     if (myNewPlot) {
