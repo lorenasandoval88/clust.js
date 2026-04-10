@@ -303,8 +303,10 @@ export async function hclust_plot(options = {}) {
     data: displayMatrix,
     rowNames: rowNamesClust,
     colNames: colNamesClust,
-    width: width - margin.left,
-    height: height - margin.top,
+    // width: width - margin.left,
+    // height: height - margin.top,
+    width: heatmapInnerWidth,
+    height: heatmapInnerHeight,
     legendOffsetX: 20,
     color: heatmapColor,
     colorScale: heatmapColorScale
