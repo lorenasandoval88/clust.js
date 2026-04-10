@@ -31,7 +31,7 @@ function trimText(arr) {
 
 
 export async function heatmap_plot(options = {}) {
-  console.log("RUNNING heatmap_plot()----------------------");
+  //console.log("RUNNING heatmap_plot()----------------------");
  
 
   const {
@@ -181,11 +181,16 @@ if (typeof colorScale === "function") {
 
   x_axis.selectAll('.tick').selectAll('line').remove()
   x_axis.selectAll("text")
+  // .style("text-anchor", "middle")
+  // .attr("dx", "0px")
+  // .attr("dy", "0.5em")
+  // .attr("transform", "rotate(-90)")
     .style("text-anchor", "end")
     .attr("dx", "-2px")
     .attr("dy", "0.3em")
     .attr("class", "xa")
     .attr("transform", "rotate(-90)")
+    
     .style("fill", "#000")
 
   //create y axis  plus text labels (at right of heatmap)
