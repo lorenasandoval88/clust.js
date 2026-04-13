@@ -116,7 +116,7 @@ const normalizeHclustInput = ({
 
 
 export async function hclust_plot(options = {}) {
-    console.log("RUNNING hclust_plot()-------------------------------")
+    // console.log("RUNNING hclust_plot()-------------------------------")
 
     const {
         divid: divid = "",
@@ -484,7 +484,7 @@ export async function hclust_plot(options = {}) {
         // document.body.appendChild(div)
         div.innerHTML = ""
         div.appendChild(svg.node())
-        console.log(`plot div provided in function parameters.divid:`, divid);
+        // console.log(`plot div provided in function parameters.divid:`, divid);
 
 
     } else if (!document.getElementById("childDiv")) {
