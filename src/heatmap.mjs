@@ -138,6 +138,18 @@ if (typeof colorScale === "function") {
   const colIndices = d3.range(data[0].length);
   const rowIndices = d3.range(data.length);
 
+  const maxVisibleXLabels = 30;
+  const xLabelStep = colIndices.length > maxVisibleXLabels
+    ? Math.ceil(colIndices.length / maxVisibleXLabels)
+    : 1;
+  const xTickValues = colIndices.filter(i => i % xLabelStep === 0);
+  if (
+    colIndices.length > 0 &&
+    xTickValues[xTickValues.length - 1] !== colIndices[colIndices.length - 1]
+  ) {
+    xTickValues.push(colIndices[colIndices.length - 1]);
+  }
+
   let x_scale = d3.scaleBand()
     .domain(colIndices)
     .range([0, innerWidth])
@@ -175,7 +187,9 @@ if (typeof colorScale === "function") {
   //create x axis plus text labels (at bottom of heatmap)
   const x_axis = g.append('g')
     .attr('transform', `translate(0, ${innerHeight})`)
-    .call(d3.axisBottom(x_scale).tickFormat(i => trimmedColnames[i]))
+    .call(d3.axisBottom(x_scale)
+      .tickValues(xTickValues)
+      .tickFormat(i => trimmedColnames[i]))
     .style("font-size", labelFontSizeBottom + "px");
 
 
