@@ -36,7 +36,6 @@ export async function heatmap_plot(options = {}) {
 
   const {
     divId: divId = "",
-    divid: legacyDivId = "",
     data: data = irisData.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),
     rowNames: rowNames = irisData.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
     colNames: colNames = Object.keys(irisData[0]).slice(0, -1),
@@ -56,7 +55,7 @@ export async function heatmap_plot(options = {}) {
         tooltip_fontSize: tooltip_fontSize = '14px',
 
   } = options
-        const targetDivId = divId || legacyDivId;
+        const targetDivId = divId;
 
   // Default color palette: navy (low) → white (middle) → red (high)
   const color = inputColor ?? ['#000080', '#ffffff', '#d73027'];

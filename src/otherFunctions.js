@@ -160,13 +160,12 @@ const textBox = async function ( options = {}) {
   const {
     text: text = "No text provided",
     divId: divId = "",
-    divid: legacyDivId = "",
     width: width = 460, //"auto",
     height: height = 150, //"auto",
     border: border = "2px solid",
     color: color = "red", //"auto",
   } = options;
-  const targetDivId = divId || legacyDivId;
+  const targetDivId = divId;
 
 // console.log("textBox options", options)
   // check if textbox div was provided in the function call

@@ -42,7 +42,6 @@ export async function scatter_plot(options = {}) {
 
   const {
     divId: divId = "",
-    divid: legacyDivId = "",
     data: data = spiralData,
     width: width = 600,
     height: height = 460,
@@ -50,7 +49,7 @@ export async function scatter_plot(options = {}) {
     xCol: xCol = null,  // column name for x-axis
     yCol: yCol = null   // column name for y-axis
   } = options;
-  const targetDivId = divId || legacyDivId;
+  const targetDivId = divId;
 
   // Resolve target container
   let div = targetDivId ? document.getElementById(targetDivId) : null;

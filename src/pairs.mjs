@@ -56,13 +56,12 @@ export async function pairs_plot(options = {}) {
 
   const {
     divId: divId = "",
-    divid: legacyDivId = "",
     data: data = irisData,
     width: width = 1000,
     height: height = 1000,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
   } = options;
-  const targetDivId = divId || legacyDivId;
+  const targetDivId = divId;
 
   // Resolve target container
   let div = targetDivId ? document.getElementById(targetDivId) : null;
@@ -269,14 +268,11 @@ export async function pairs_plot(options = {}) {
 export async function pairs_UI(options = {}) {
   const {
     divId: divId = "",
-    divid: legacyDivId = "",
     data: data = irisData,
     width: width = 1000,
     height: height = 1000,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
   } = options;
 
-  const targetDivId = divId || legacyDivId;
-
-  await pairs_plot({ divId: targetDivId, data, width, height, colors });
+  await pairs_plot({ divId, data, width, height, colors });
 }

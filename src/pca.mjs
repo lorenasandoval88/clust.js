@@ -90,13 +90,12 @@ export async function pca_plot(options = {}) {
 
   const {
     divId: divId = "",
-    divid: legacyDivId = "",
     data: data = irisData, 
     width: width = 600,
     height: height = 300,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
   } = options;
-  const targetDivId = divId || legacyDivId;
+  const targetDivId = divId;
 
 
   // Resolve target container and avoid redundant lookups
@@ -290,14 +289,13 @@ export async function pca_UI(options = {}) {
 
   const {
     divId: divId = "",
-    divid: legacyDivId = "",
     data: data = irisData, 
     width: width = 600,
     height: height = 300,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
     loadIrisOnStart: loadIrisOnStart = false,
   } = options;
-  const targetDivId = divId || legacyDivId;
+  const targetDivId = divId;
 
 
   // use the div provided in the function call or create a new one

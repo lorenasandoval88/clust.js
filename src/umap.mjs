@@ -37,7 +37,6 @@ export async function umap_plot(options = {}) {
 
   const {
     divId: divId = "",
-    divid: legacyDivId = "",
     data: data = irisData,
     width: width = 600,
     height: height = 300,
@@ -46,7 +45,7 @@ export async function umap_plot(options = {}) {
     minDist: minDist = 0.1,
     nComponents: nComponents = 2
   } = options;
-  const targetDivId = divId || legacyDivId;
+  const targetDivId = divId;
 
   // Resolve target container
   let div = targetDivId ? document.getElementById(targetDivId) : null;

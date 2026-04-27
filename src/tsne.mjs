@@ -28,7 +28,6 @@ export async function tsne_plot(options = {}) {
 
   const {
     divId: divId = "",
-    divid: legacyDivId = "",
     data: data = irisData,
     width: width = 600,
     height: height = 300,
@@ -37,7 +36,7 @@ export async function tsne_plot(options = {}) {
     epsilon: epsilon = 10,
     iterations: iterations = 1000
   } = options;
-  const targetDivId = divId || legacyDivId;
+  const targetDivId = divId;
 
   // Resolve target container
   let div = targetDivId ? document.getElementById(targetDivId) : null;

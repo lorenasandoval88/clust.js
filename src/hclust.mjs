@@ -127,7 +127,6 @@ export async function hclust_plot(options = {}) {
 
     const {
         divId: divId = "",
-        divid: legacyDivId = "",
         data: rawData = irisData,
         displayData: rawDisplayData = null,
         rowNames: inputRowNames,
@@ -160,7 +159,7 @@ export async function hclust_plot(options = {}) {
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
         tooltip_fontSize: tooltip_fontSize = '14px',
     } = options;
-    const targetDivId = divId || legacyDivId;
+    const targetDivId = divId;
 
 
     //Normalize both matrices to ensure they are in the correct format and dimensions match. 'data' is used for clustering and 'displayData' is used for the heatmap (can be the same as 'data' if 'displayData' is not provided).
