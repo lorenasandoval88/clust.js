@@ -159,6 +159,18 @@ if (typeof colorScale === "function") {
     xTickValues.push(colIndices[colIndices.length - 1]);
   }
 
+  const maxVisibleYLabels = 30;
+  const yLabelStep = rowIndices.length > maxVisibleYLabels
+    ? Math.ceil(rowIndices.length / maxVisibleYLabels)
+    : 1;
+  const yTickValues = rowIndices.filter(i => i % yLabelStep === 0);
+  if (
+    rowIndices.length > 0 &&
+    yTickValues[yTickValues.length - 1] !== rowIndices[rowIndices.length - 1]
+  ) {
+    yTickValues.push(rowIndices[rowIndices.length - 1]);
+  }
+
   let x_scale = d3.scaleBand()
     .domain(colIndices)
     .range([0, innerWidth])
@@ -219,7 +231,9 @@ if (typeof colorScale === "function") {
   //create y axis  plus text labels (at right of heatmap)
   let y_axis = g.append('g')
     .attr('transform', `translate( ${innerWidth},0)`)
-    .call(d3.axisRight(y_scale).tickFormat(i => trimmedRownames[i]))
+    .call(d3.axisRight(y_scale)
+      .tickValues(yTickValues)
+      .tickFormat(i => trimmedRownames[i]))
     .attr("id", "ya")
     .style("font-size", labelFontSizeRight + "px");
 

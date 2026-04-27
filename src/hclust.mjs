@@ -189,13 +189,27 @@ export async function hclust_plot(options = {}) {
         throw new Error("displayData must have the same dimensions as data");
     }
 
-    const maxAutoSize = 300; // maximum size for auto-scaling to prevent excessively large plots
+    const maxAutoSize = 1000; // maximum size for auto-scaling to prevent excessively large plots
     const colCount = data[0]?.length ?? 0;
     const rowCount = data.length;
-    const autoWidth = Math.min(maxAutoSize, Math.max(400, colCount * 16 + 180));
+    const autoWidth = Math.min(maxAutoSize, Math.max(400, colCount * 18 + 260));
     const autoHeight = Math.min(maxAutoSize, Math.max(400, rowCount * 16 + 180));
-    const width = Number.isFinite(inputWidth) ? inputWidth : autoWidth;
-    const height = Number.isFinite(inputHeight) ? inputHeight : autoHeight;
+
+    const targetDiv = targetDivId ? document.getElementById(targetDivId) : null;
+    const clientWidth = targetDiv && Number.isFinite(targetDiv.clientWidth) && targetDiv.clientWidth > 0
+        ? targetDiv.clientWidth
+        : null;
+    const cssWidth = targetDiv
+        ? parseFloat(window.getComputedStyle(targetDiv).width)
+        : NaN;
+    const detectedContainerWidth = clientWidth ?? (Number.isFinite(cssWidth) && cssWidth > 0 ? cssWidth : null);
+
+    const width = Number.isFinite(inputWidth) && inputWidth > 0
+        ? inputWidth
+        : (detectedContainerWidth
+            ? Math.min(maxAutoSize, Math.max(320, detectedContainerWidth - 24))
+            : autoWidth);
+    const height = Number.isFinite(inputHeight) && inputHeight > 0 ? inputHeight : autoHeight;
 
     // 'data' is now the main matrix input
     // console.log("hclust_plot() data:", data)
