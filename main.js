@@ -562,7 +562,7 @@ const el = document.getElementById("myPCA");
 
   await pca_plot({
     data,
-    divid: "myPCA",
+    divId: "myPCA",
     width: width,
     height: height
   });
@@ -607,9 +607,9 @@ document.getElementById("btnHclust")?.addEventListener("click", async () => {
   const numericKeys = keys.filter(k => typeof sample[k] === "number");
   const labelKey = keys.find(k => typeof sample[k] !== "number");
 
-  const colnames = numericKeys.length ? numericKeys : keys.filter(k => k !== labelKey);
-  const matrix = data.map(row => colnames.map(k => row[k])).filter(row => row.every(v => typeof v === "number" && Number.isFinite(v)));
-  const rownames = data.map((row, idx) => (labelKey ? String(row[labelKey]) : "row") + idx);
+  const colNames = numericKeys.length ? numericKeys : keys.filter(k => k !== labelKey);
+  const matrix = data.map(row => colNames.map(k => row[k])).filter(row => row.every(v => typeof v === "number" && Number.isFinite(v)));
+  const rowNames = data.map((row, idx) => (labelKey ? String(row[labelKey]) : "row") + idx);
 
   // Show hclust controls
   const hclustControls = document.getElementById("hclustControls");
@@ -632,10 +632,10 @@ document.getElementById("btnHclust")?.addEventListener("click", async () => {
   el.classList.add("has-plot");
 
   await hclust_plot({
-    divid: "myHclust",
+    divId: "myHclust",
     data: matrix,
-    rownames,
-    colnames,
+    rowNames: rowNames,
+    colNames: colNames,
     width,
     height,
     clusterCols: appState.hclustClusterCols,
@@ -704,19 +704,19 @@ console.log("btnHeatmap clicked, appState.data:", data);
   const numericKeys = keys.filter(k => typeof sample[k] === "number");
   const labelKey = keys.find(k => typeof sample[k] !== "number");
 
-  const colnames = numericKeys.length ? numericKeys : keys.filter(k => k !== labelKey);
-  const matrix = data.map(row => colnames.map(k => row[k])).filter(row => row.every(v => typeof v === "number" && Number.isFinite(v)));
-  const rownames = data.map((row, idx) => (labelKey ? String(row[labelKey]) : "row") + idx);
+  const colNames = numericKeys.length ? numericKeys : keys.filter(k => k !== labelKey);
+  const matrix = data.map(row => colNames.map(k => row[k])).filter(row => row.every(v => typeof v === "number" && Number.isFinite(v)));
+  const rowNames = data.map((row, idx) => (labelKey ? String(row[labelKey]) : "row") + idx);
 
   // Clear and mark container
   el.innerHTML = "";
   el.classList.add("has-plot");
 
   await heatmap_plot({
-    divid: "myHeatmap",
+    divId: "myHeatmap",
     data: matrix,
-    rownames,
-    colnames,
+    rowNames: rowNames,
+    colNames: colNames,
     width,
     height,
   });
@@ -775,7 +775,7 @@ document.getElementById("btnUMAP")?.addEventListener("click", async () => {
 
   await umap_plot({
     data,
-    divid: "myUMAP",
+    divId: "myUMAP",
     width: width,
     height: height
   });
@@ -833,7 +833,7 @@ document.getElementById("btnTSNE")?.addEventListener("click", async () => {
 
   await tsne_plot({
     data,
-    divid: "myTSNE",
+    divId: "myTSNE",
     width: width,
     height: height
   });
@@ -920,7 +920,7 @@ document.getElementById("btnScatter")?.addEventListener("click", async () => {
 
   await scatter_plot({
     data,
-    divid: "myScatter",
+    divId: "myScatter",
     width: width,
     height: height
   });
@@ -978,7 +978,7 @@ document.getElementById("btnPairs")?.addEventListener("click", async () => {
 
   await pairs_plot({
     data,
-    divid: "myPairs",
+    divId: "myPairs",
     width: width,
     height: height
   });

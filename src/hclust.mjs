@@ -93,12 +93,13 @@ const normalizeHclustInput = ({
         throw new Error("hclust_plot() could not find any numeric columns in the provided data.");
     }
 
-    const textColumnName = keys.find(key => data.some(row => typeof row[key] === "string" && row[key].trim() !== ""));
+    const textColumnNames = keys.filter(key => data.some(row => typeof row[key] === "string" && row[key].trim() !== ""));
+    const textColumnName = textColumnNames.length === 1 ? textColumnNames[0] : null;
 
     return {
         data: data.map(row => numericColumnNames.map(key => toFiniteNumber(row[key]))),
         rowNames: rowNames ?? (textColumnName ? data.map((row, idx) => `${row[textColumnName]}${idx}`) : rowNames),
-        colNames: colNames ?? numericColumnNames
+        colNames: colNames ?? (textColumnName ? data.map(row => row[textColumnName]) : numericColumnNames)
     };
 }
 
