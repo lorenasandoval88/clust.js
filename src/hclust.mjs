@@ -232,9 +232,16 @@ export async function hclust_plot(options = {}) {
 
     const displayMatrix = transpose(    colIdx.map(i => transpose(rowIdx.map(e => displayData[e]))[i]));
 
-    // reorder col/row Names according to clustering order, else return numeric indices [0,1,2,3...]
-    let colNamesClust = colNames ? colIdx.map(i => colNames[i]) : Array.from(new Array(data[0].length), (x, i) => i + 1)
-    let rowNamesClust = rowNames ? rowIdx.map(i => rowNames[i]) : Array.from(new Array(data.length), (x, i) => i + 1)
+    const validColNames = Array.isArray(colNames) && colNames.length === data[0].length
+        ? colNames
+        : Array.from(new Array(data[0].length), (x, i) => i + 1)
+    const validRowNames = Array.isArray(rowNames) && rowNames.length === data.length
+        ? rowNames
+        : Array.from(new Array(data.length), (x, i) => i + 1)
+
+    // reorder col/row Names according to clustering order
+    let colNamesClust = colIdx.map(i => validColNames[i])
+    let rowNamesClust = rowIdx.map(i => validRowNames[i])
     // console.log("colNamesClust", colNamesClust)
     // console.log("rowNamesClust", rowNamesClust)
 
