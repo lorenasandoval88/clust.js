@@ -89,25 +89,28 @@ export async function pca_plot(options = {}) {
   console.log("RUNNING: pca_plot() function----------")
 
   const {
-    divid: divid = "",
+    divId: divId = "",
+    divid: legacyDivId = "",
     data: data = irisData, 
     width: width = 600,
     height: height = 300,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
   } = options;
+  const targetDivId = divId || legacyDivId;
 
 
   // Resolve target container and avoid redundant lookups
-  let div = divid ? document.getElementById(divid) : null;
+  let div = targetDivId ? document.getElementById(targetDivId) : null;
   if (div) {
-    console.log("div provided in function parameters:", divid);
+    console.log("div provided in function parameters:", targetDivId);
     div.innerHTML = "";
   } else {
     const currentDivNum = pcaDt.data.divNum;
     div = document.createElement("div");
-    div.id = divid || 'pca_plot' + currentDivNum;
+    div.id = targetDivId || 'pca_plot' + currentDivNum;
     console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", div.id, "and appended to document body!");
-    document.body.appendChild(div);
+    const plotsPanel = document.getElementById("plotsPanel");
+    (plotsPanel || document.body).appendChild(div);
     pcaDt.data.divNum = currentDivNum + 1;
   }
 
@@ -286,27 +289,30 @@ export async function pca_UI(options = {}) {
     console.log("RUNNING pca_UI()-------------------------------");
 
   const {
-    divid: divid = "",
+    divId: divId = "",
+    divid: legacyDivId = "",
     data: data = irisData, 
     width: width = 600,
     height: height = 300,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
     loadIrisOnStart: loadIrisOnStart = false,
   } = options;
+  const targetDivId = divId || legacyDivId;
 
 
   // use the div provided in the function call or create a new one
   // Resolve target container and avoid redundant lookups
   const currentDivNum = pcaDt.data.divNum;
-  let div = divid ? document.getElementById(divid) : null;
+  let div = targetDivId ? document.getElementById(targetDivId) : null;
   if (div) {
-    console.log("plot div provided in function parameters. divid:", divid);
+    console.log("plot div provided in function parameters. divId:", targetDivId);
     div.innerHTML = "";
   } else {
       div = document.createElement("div");
-      div.id = divid || 'pca_UI' + currentDivNum;
+      div.id = targetDivId || 'pca_UI' + currentDivNum;
       console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", div.id, "and appended to document body!");
-      document.body.appendChild(div);
+      const plotsPanel = document.getElementById("plotsPanel");
+      (plotsPanel || document.body).appendChild(div);
       //pcaDt.data.divNum = currentDivNum + 1;
     }
 
@@ -408,13 +414,13 @@ export async function pca_UI(options = {}) {
       // PCA plot and text box with options
       await pca_plot({
         data: json, 
-        divid: plotDiv.id,
+        divId: plotDiv.id,
         width: width,
         height: height,
         colors: colors
       });
       
-      await textBox({text: csv, divid: textBoxDiv.id});
+      await textBox({text: csv, divId: textBoxDiv.id});
       
       hideLoading();
     } catch (error) {
@@ -570,7 +576,8 @@ async function pcaPlotly2DPlot(data, labels) {
   // pca_plot3.style.width = 400//"auto";
   // pca_plot3.style.height = 400//"auto";
 
-  document.body.appendChild(pca_plot3);
+  const plotsPanel = document.getElementById("plotsPanel");
+  (plotsPanel || document.body).appendChild(pca_plot3);
   // pca_plot2.append(document.createElement('br'));
   await imports.Plotly.newPlot('pca_plot3', [trace3d], layout2d);
 }

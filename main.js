@@ -273,6 +273,38 @@ const appState = {
   hclustClusterCols: true   // toggle for hclust column clustering
 };
 
+const plotContainerIds = ["myPCA", "myHclust", "myHeatmap", "myUMAP", "myTSNE", "myScatter", "myPairs", "myPlots"];
+
+function resetAllPlots() {
+  plotContainerIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = "";
+    el.classList.remove("has-plot");
+  });
+}
+
+function resetDatasetUiState() {
+  appState.selectionMode = "normal";
+  appState.hclustClusterRows = true;
+  appState.hclustClusterCols = true;
+
+  const hclustControls = document.getElementById("hclustControls");
+  if (hclustControls) hclustControls.style.display = "none";
+
+  const btnRows = document.getElementById("btnHclustRows");
+  if (btnRows) {
+    btnRows.textContent = "Cluster Rows: ON";
+    btnRows.className = "btn btn-sm btn-primary me-2";
+  }
+
+  const btnCols = document.getElementById("btnHclustCols");
+  if (btnCols) {
+    btnCols.textContent = "Cluster Cols: ON";
+    btnCols.className = "btn btn-sm btn-primary";
+  }
+}
+
 // ======== IRIS (your built-in sample) ========
 // const irisData = await fetch("./src/data/iris.json").then(r => r.json());
 
@@ -387,11 +419,7 @@ function renderTableRight(data, title = "Dataset Preview") {
       if (countEl) countEl.textContent = appState.selectedColumns.length;
 
       // Clear all plot containers when variable is selected/deselected
-      const plotIds = ["myPCA", "myHclust", "myHeatmap", "myUMAP", "myTSNE", "myScatter", "myPairs"];
-      plotIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = "";
-      });
+      resetAllPlots();
     });
     
     th.appendChild(btn);
@@ -444,11 +472,7 @@ document.getElementById("builtinData")?.addEventListener("change", (e) => {
 
   if (val === "iris" || val === "spiral") {
     // Clear all plot containers
-    const plotIds = ["myPCA", "myHclust", "myHeatmap", "myUMAP", "myTSNE", "myScatter", "myPairs"];
-    plotIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = "";
-    });
+    resetAllPlots();
 
     // Reset loaded file info
     appState.source = "builtin";
@@ -456,11 +480,8 @@ document.getElementById("builtinData")?.addEventListener("change", (e) => {
     appState.selectedColumns = [];
     appState.data = val === "iris" ? irisData : spiralData;
 
-    // Reset hclust clustering toggles
-    appState.hclustClusterRows = true;
-    appState.hclustClusterCols = true;
-    const hclustControls = document.getElementById("hclustControls");
-    if (hclustControls) hclustControls.style.display = "none";
+    // Reset tool/UI state
+    resetDatasetUiState();
 
     // Optionally clear file input
     const fileInput = document.getElementById("fileInput");
@@ -489,19 +510,15 @@ document.getElementById("fileInput")?.addEventListener("change", (e) => {
     appState.name = file.name;
     appState.selectedColumns = []; // Reset selection
 
-    // Reset hclust clustering toggles
-    appState.hclustClusterRows = true;
-    appState.hclustClusterCols = true;
-    const hclustControls = document.getElementById("hclustControls");
-    if (hclustControls) hclustControls.style.display = "none";
+    // Reset tool/UI state
+    resetDatasetUiState();
+
+    const builtinSelect = document.getElementById("builtinData");
+    if (builtinSelect) builtinSelect.selectedIndex = 0;
 
     renderTableRight(appState.data, `Loaded file: ${file.name}`);
     // Clear all plot containers
-    const plotIds = ["myPCA", "myHclust", "myHeatmap", "myUMAP", "myTSNE", "myScatter", "myPairs"];
-    plotIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = "";
-    });
+    resetAllPlots();
   };
   reader.readAsText(file);
 });

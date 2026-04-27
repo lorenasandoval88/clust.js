@@ -35,12 +35,13 @@ export async function heatmap_plot(options = {}) {
  
 
   const {
-    divid: divid = "",
+    divId: divId = "",
+    divid: legacyDivId = "",
     data: data = irisData.map(obj => Object.values(obj)).map(row => row.slice(0, -1)),
     rowNames: rowNames = irisData.map(obj => Object.values(obj)).map((d, idx) => d[4] + idx),
     colNames: colNames = Object.keys(irisData[0]).slice(0, -1),
-    height: height = 900,
-    width: width = 400,
+    height: inputHeight,
+    width: inputWidth,
     color: inputColor = null, // array of 3 colors: [low, middle, high]
     marginTop: marginTop = 0,
     marginBottom: marginBottom = 0,
@@ -55,9 +56,18 @@ export async function heatmap_plot(options = {}) {
         tooltip_fontSize: tooltip_fontSize = '14px',
 
   } = options
+        const targetDivId = divId || legacyDivId;
 
   // Default color palette: navy (low) → white (middle) → red (high)
   const color = inputColor ?? ['#000080', '#ffffff', '#d73027'];
+
+  const maxAutoSize = 300; // maximum size for auto-scaling to prevent excessively large plots
+  const colCount = data[0]?.length ?? 0;
+  const rowCount = data.length;
+  const autoWidth = Math.min(maxAutoSize, Math.max(400, colCount * 16 + 180));
+  const autoHeight = Math.min(maxAutoSize, Math.max(400, rowCount * 16 + 180));
+  const width = Number.isFinite(inputWidth) && inputWidth > 0 ? inputWidth : autoWidth;
+  const height = Number.isFinite(inputHeight) && inputHeight > 0 ? inputHeight : autoHeight;
 
   // start of heatmap
 let color_scale;
@@ -362,16 +372,17 @@ g.append("text")
 
   // Here we add the svg to the plot div
   // Check if the div was provided in the function call
-  if (document.getElementById(divid)) {
-    console.log(`plot div provided in function parameters.divid:`, divid);
-    const div = document.getElementById(divid)
+  if (document.getElementById(targetDivId)) {
+    console.log(`plot div provided in function parameters.divId:`, targetDivId);
+    const div = document.getElementById(targetDivId)
     div.innerHTML = ""
     div.appendChild(svg.node())
 
   } else if (!document.getElementById("childDiv")) {
     // console.log(`pcaPlot div  NOT provided in function parameters or doesn't exist, creating div....`);
     const div = document.createElement("div")
-    document.body.appendChild(div)
+    const plotsPanel = document.getElementById("plotsPanel");
+    (plotsPanel || document.body).appendChild(div)
     div.appendChild(svg.node());
   }
 

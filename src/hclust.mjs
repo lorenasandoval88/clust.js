@@ -99,7 +99,7 @@ const normalizeHclustInput = ({
     return {
         data: data.map(row => numericColumnNames.map(key => toFiniteNumber(row[key]))),
         rowNames: rowNames ?? (textColumnName ? data.map((row, idx) => `${row[textColumnName]}${idx}`) : rowNames),
-        colNames: colNames ?? (textColumnName ? data.map(row => row[textColumnName]) : numericColumnNames)
+        colNames: colNames ?? numericColumnNames
     };
 }
 
@@ -120,13 +120,14 @@ export async function hclust_plot(options = {}) {
     // console.log("RUNNING hclust_plot()-------------------------------")
 
     const {
-        divid: divid = "",
+        divId: divId = "",
+        divid: legacyDivId = "",
         data: rawData = irisData,
         displayData: rawDisplayData = null,
         rowNames: inputRowNames,
         colNames: inputColNames,
-        width: width = 600,
-        height: height = 1500,
+        width: inputWidth,
+        height: inputHeight,
         // dendograms
         clusterCols: clusterCols = true,
         clusterRows: clusterRows = true,
@@ -153,6 +154,7 @@ export async function hclust_plot(options = {}) {
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
         tooltip_fontSize: tooltip_fontSize = '14px',
     } = options;
+    const targetDivId = divId || legacyDivId;
 
 
     //Normalize both matrices to ensure they are in the correct format and dimensions match. 'data' is used for clustering and 'displayData' is used for the heatmap (can be the same as 'data' if 'displayData' is not provided).
@@ -181,6 +183,14 @@ export async function hclust_plot(options = {}) {
     ) {
         throw new Error("displayData must have the same dimensions as data");
     }
+
+    const maxAutoSize = 300; // maximum size for auto-scaling to prevent excessively large plots
+    const colCount = data[0]?.length ?? 0;
+    const rowCount = data.length;
+    const autoWidth = Math.min(maxAutoSize, Math.max(400, colCount * 16 + 180));
+    const autoHeight = Math.min(maxAutoSize, Math.max(400, rowCount * 16 + 180));
+    const width = Number.isFinite(inputWidth) ? inputWidth : autoWidth;
+    const height = Number.isFinite(inputHeight) ? inputHeight : autoHeight;
 
     // 'data' is now the main matrix input
     // console.log("hclust_plot() data:", data)
@@ -480,12 +490,12 @@ export async function hclust_plot(options = {}) {
 
     // Here we add the svg to the plot div
     // Check if the div was provided in the function call
-    if (document.getElementById(divid)) {
-        const div = document.getElementById(divid)
+    if (document.getElementById(targetDivId)) {
+        const div = document.getElementById(targetDivId)
         // document.body.appendChild(div)
         div.innerHTML = ""
         div.appendChild(svg.node())
-        // console.log(`plot div provided in function parameters.divid:`, divid);
+        // console.log(`plot div provided in function parameters.divId:`, targetDivId);
 
 
     } else if (!document.getElementById("childDiv")) {
@@ -493,10 +503,11 @@ export async function hclust_plot(options = {}) {
         const currentDivNum = hclustDt.data.divNum;
 
         const div = document.createElement("div")
-        div.id = divid || 'hclust_plot' + currentDivNum;
+        div.id = targetDivId || 'hclust_plot' + currentDivNum;
         console.log("div  NOT provided in function options or doesn't exist... created a new div with id: ", div.id, "and appended to document body!");
 
-        document.body.appendChild(div)
+        const plotsPanel = document.getElementById("plotsPanel");
+        (plotsPanel || document.body).appendChild(div)
         div.appendChild(svg.node());
         hclustDt.data.divNum = currentDivNum + 1;
     }

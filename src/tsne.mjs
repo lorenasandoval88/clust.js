@@ -27,7 +27,8 @@ export async function tsne_plot(options = {}) {
   console.log("RUNNING: tsne_plot() function----------");
 
   const {
-    divid: divid = "",
+    divId: divId = "",
+    divid: legacyDivId = "",
     data: data = irisData,
     width: width = 600,
     height: height = 300,
@@ -36,18 +37,20 @@ export async function tsne_plot(options = {}) {
     epsilon: epsilon = 10,
     iterations: iterations = 1000
   } = options;
+  const targetDivId = divId || legacyDivId;
 
   // Resolve target container
-  let div = divid ? document.getElementById(divid) : null;
+  let div = targetDivId ? document.getElementById(targetDivId) : null;
   if (div) {
-    console.log("plot div provided in function parameters. divid:", divid);
+    console.log("plot div provided in function parameters. divId:", targetDivId);
     div.innerHTML = "";
   } else {
     const currentDivNum = tsneDt.data.divNum;
     div = document.createElement("div");
-    div.id = divid || 'tsne_plot' + currentDivNum;
+    div.id = targetDivId || 'tsne_plot' + currentDivNum;
     console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", div.id);
-    document.body.appendChild(div);
+    const plotsPanel = document.getElementById("plotsPanel");
+    (plotsPanel || document.body).appendChild(div);
     tsneDt.data.divNum = currentDivNum + 1;
   }
 

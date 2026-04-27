@@ -41,7 +41,8 @@ export async function scatter_plot(options = {}) {
   console.log("RUNNING: scatter_plot() function----------");
 
   const {
-    divid: divid = "",
+    divId: divId = "",
+    divid: legacyDivId = "",
     data: data = spiralData,
     width: width = 600,
     height: height = 460,
@@ -49,18 +50,20 @@ export async function scatter_plot(options = {}) {
     xCol: xCol = null,  // column name for x-axis
     yCol: yCol = null   // column name for y-axis
   } = options;
+  const targetDivId = divId || legacyDivId;
 
   // Resolve target container
-  let div = divid ? document.getElementById(divid) : null;
+  let div = targetDivId ? document.getElementById(targetDivId) : null;
   if (div) {
-    console.log("div provided in function parameters:", divid);
+    console.log("div provided in function parameters:", targetDivId);
     div.innerHTML = "";
   } else {
     const currentDivNum = scatterDt.data.divNum;
     div = document.createElement("div");
-    div.id = divid || 'scatter_plot' + currentDivNum;
+    div.id = targetDivId || 'scatter_plot' + currentDivNum;
     console.log("div NOT provided within function options or doesn't exist... created a new div with id: ", div.id);
-    document.body.appendChild(div);
+    const plotsPanel = document.getElementById("plotsPanel");
+    (plotsPanel || document.body).appendChild(div);
     scatterDt.data.divNum = currentDivNum + 1;
   }
 

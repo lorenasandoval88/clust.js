@@ -55,24 +55,27 @@ export async function pairs_plot(options = {}) {
   console.log("RUNNING: pairs_plot() function----------");
 
   const {
-    divid: divid = "",
+    divId: divId = "",
+    divid: legacyDivId = "",
     data: data = irisData,
     width: width = 1000,
     height: height = 1000,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
   } = options;
+  const targetDivId = divId || legacyDivId;
 
   // Resolve target container
-  let div = divid ? document.getElementById(divid) : null;
+  let div = targetDivId ? document.getElementById(targetDivId) : null;
   if (div) {
-    console.log("div provided in function parameters:", divid);
+    console.log("div provided in function parameters:", targetDivId);
     div.innerHTML = "";
   } else {
     const currentDivNum = pairsDt.data.divNum;
     div = document.createElement("div");
-    div.id = divid || 'pairs_plot' + currentDivNum;
+    div.id = targetDivId || 'pairs_plot' + currentDivNum;
     console.log("div NOT provided... created new div with id:", div.id);
-    document.body.appendChild(div);
+    const plotsPanel = document.getElementById("plotsPanel");
+    (plotsPanel || document.body).appendChild(div);
     pairsDt.data.divNum = currentDivNum + 1;
   }
 
@@ -265,12 +268,15 @@ export async function pairs_plot(options = {}) {
 
 export async function pairs_UI(options = {}) {
   const {
-    divid: divid = "",
+    divId: divId = "",
+    divid: legacyDivId = "",
     data: data = irisData,
     width: width = 1000,
     height: height = 1000,
     colors: colors = ["red", "blue", "green", "orange", "purple", "pink", "yellow"],
   } = options;
 
-  await pairs_plot({ divid, data, width, height, colors });
+  const targetDivId = divId || legacyDivId;
+
+  await pairs_plot({ divId: targetDivId, data, width, height, colors });
 }

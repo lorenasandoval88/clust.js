@@ -159,19 +159,21 @@ const textBox = async function ( options = {}) {
 
   const {
     text: text = "No text provided",
-    divid: divid = "",
+    divId: divId = "",
+    divid: legacyDivId = "",
     width: width = 460, //"auto",
     height: height = 150, //"auto",
     border: border = "2px solid",
     color: color = "red", //"auto",
   } = options;
+  const targetDivId = divId || legacyDivId;
 
 // console.log("textBox options", options)
   // check if textbox div was provided in the function call
-  if (document.getElementById(divid)) {
+  if (document.getElementById(targetDivId)) {
     console.log(`textbox div provided in function parameters.`);
-    const div = document.getElementById(divid)
-    div.id = divid
+    const div = document.getElementById(targetDivId)
+    div.id = targetDivId
     div.style.display = "block"
     div.style.overflow = "auto"
     div.style.width = width + 'px'
@@ -183,7 +185,7 @@ const textBox = async function ( options = {}) {
 
     //  console.log("div",div);
 
-    createTableFromCSV(text, divid)
+    createTableFromCSV(text, targetDivId)
 
     // update textbox content
   } else if (document.getElementById("textboxDiv")) {
@@ -192,7 +194,7 @@ const textBox = async function ( options = {}) {
 
   } else {
     // Create a new table element (use provided id if given, else fallback)
-    const targetId = divid || "textboxDiv";
+    const targetId = targetDivId || "textboxDiv";
     console.log(`textbox div NOT provided or not found. creating element with id: ${targetId}`);
     const tbl = document.createElement("table")
     tbl.id = targetId
@@ -210,7 +212,7 @@ const textBox = async function ( options = {}) {
 
   }
 
-  return document.getElementById(divid || "textboxDiv")
+  return document.getElementById(targetDivId || "textboxDiv")
 }
 
 
