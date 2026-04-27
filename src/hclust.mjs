@@ -76,7 +76,10 @@ const normalizeHclustInput = ({
 
     if (Array.isArray(data[0])) {
         return {
-            data,
+            data: data.map(row => row.map(value => {
+                const parsedValue = toFiniteNumber(value);
+                return parsedValue === null ? -1 : parsedValue;
+            })),
             rowNames,
             colNames
         };
@@ -87,7 +90,7 @@ const normalizeHclustInput = ({
     }
 
     const keys = Object.keys(data[0]);
-    const numericColumnNames = keys.filter(key => data.every(row => toFiniteNumber(row[key]) !== null));
+    const numericColumnNames = keys.filter(key => data.some(row => toFiniteNumber(row[key]) !== null));
 
     if (numericColumnNames.length === 0) {
         throw new Error("hclust_plot() could not find any numeric columns in the provided data.");
@@ -97,7 +100,10 @@ const normalizeHclustInput = ({
     const textColumnName = textColumnNames.length === 1 ? textColumnNames[0] : null;
 
     return {
-        data: data.map(row => numericColumnNames.map(key => toFiniteNumber(row[key]))),
+        data: data.map(row => numericColumnNames.map(key => {
+            const parsedValue = toFiniteNumber(row[key]);
+            return parsedValue === null ? -1 : parsedValue;
+        })),
         rowNames: rowNames ?? (textColumnName ? data.map((row, idx) => `${row[textColumnName]}${idx}`) : rowNames),
         colNames: colNames ?? numericColumnNames
     };

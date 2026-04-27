@@ -284,6 +284,12 @@ function resetAllPlots() {
   });
 }
 
+function showPlotLoading(el, label = "Loading...") {
+  if (!el) return;
+  el.innerHTML = `<div class="text-center text-muted p-4">${label}</div>`;
+  el.classList.add("has-plot");
+}
+
 function resetDatasetUiState() {
   appState.selectionMode = "normal";
   appState.hclustClusterRows = true;
@@ -571,11 +577,7 @@ const el = document.getElementById("myPCA");
   const width = Math.max(520, el.clientWidth - 24);
   const height = 410;
 
-// Toggle the class in JS when you render/clear PCA plot so background stays white
-  const p = document.getElementById("myPCA");
-    if (p) {
-    p.classList.add("has-plot");
-    }
+  showPlotLoading(el, "Loading...");
 
   await pca_plot({
     data,
@@ -625,7 +627,10 @@ document.getElementById("btnHclust")?.addEventListener("click", async () => {
   const labelKey = keys.find(k => typeof sample[k] !== "number");
 
   const colNames = numericKeys.length ? numericKeys : keys.filter(k => k !== labelKey);
-  const matrix = data.map(row => colNames.map(k => row[k])).filter(row => row.every(v => typeof v === "number" && Number.isFinite(v)));
+  const matrix = data.map(row => colNames.map(k => {
+    const value = row[k];
+    return typeof value === "number" && Number.isFinite(value) ? value : -1;
+  }));
   const rowNames = data.map((row, idx) => (labelKey ? String(row[labelKey]) : "row") + idx);
 
   // Show hclust controls
@@ -644,9 +649,7 @@ document.getElementById("btnHclust")?.addEventListener("click", async () => {
     btnCols.className = `btn btn-sm ${appState.hclustClusterCols ? "btn-primary" : "btn-outline-secondary"}`;
   }
 
-  // Clear and mark container
-  el.innerHTML = "";
-  el.classList.add("has-plot");
+  showPlotLoading(el, "Loading...");
 
   await hclust_plot({
     divId: "myHclust",
@@ -722,12 +725,13 @@ console.log("btnHeatmap clicked, appState.data:", data);
   const labelKey = keys.find(k => typeof sample[k] !== "number");
 
   const colNames = numericKeys.length ? numericKeys : keys.filter(k => k !== labelKey);
-  const matrix = data.map(row => colNames.map(k => row[k])).filter(row => row.every(v => typeof v === "number" && Number.isFinite(v)));
+  const matrix = data.map(row => colNames.map(k => {
+    const value = row[k];
+    return typeof value === "number" && Number.isFinite(value) ? value : -1;
+  }));
   const rowNames = data.map((row, idx) => (labelKey ? String(row[labelKey]) : "row") + idx);
 
-  // Clear and mark container
-  el.innerHTML = "";
-  el.classList.add("has-plot");
+  showPlotLoading(el, "Loading...");
 
   await heatmap_plot({
     divId: "myHeatmap",
@@ -786,9 +790,7 @@ document.getElementById("btnUMAP")?.addEventListener("click", async () => {
   const width = Math.max(520, el.clientWidth - 24);
   const height = 410;
 
-  // Clear and mark container
-  el.innerHTML = "";
-  el.classList.add("has-plot");
+  showPlotLoading(el, "Loading...");
 
   await umap_plot({
     data,
@@ -844,9 +846,7 @@ document.getElementById("btnTSNE")?.addEventListener("click", async () => {
   const width = Math.max(520, el.clientWidth - 24);
   const height = 410;
 
-  // Clear and mark container with loading message
-  el.innerHTML = '<div class="text-center text-muted p-4">Loading t-SNE plot...</div>';
-  el.classList.add("has-plot");
+  showPlotLoading(el, "Loading...");
 
   await tsne_plot({
     data,
@@ -931,9 +931,7 @@ document.getElementById("btnScatter")?.addEventListener("click", async () => {
   const width = Math.max(520, el.clientWidth - 24);
   const height = 410;
 
-  // Clear and mark container
-  el.innerHTML = "";
-  el.classList.add("has-plot");
+  showPlotLoading(el, "Loading...");
 
   await scatter_plot({
     data,
@@ -989,9 +987,7 @@ document.getElementById("btnPairs")?.addEventListener("click", async () => {
   const width = Math.max(900, el.clientWidth - 24);
   const height = 900;
 
-  // Clear and mark container
-  el.innerHTML = "";
-  el.classList.add("has-plot");
+  showPlotLoading(el, "Loading...");
 
   await pairs_plot({
     data,
