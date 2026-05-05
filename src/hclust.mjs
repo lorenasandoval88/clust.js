@@ -65,7 +65,7 @@ const toFiniteNumber = value => {
     return null;
 }
 
-const normalizeHclustInput = ({
+const extractHclustInput = ({
     data,
     rowNames,
     colNames
@@ -76,10 +76,7 @@ const normalizeHclustInput = ({
 
     if (Array.isArray(data[0])) {
         return {
-            data: data.map(row => row.map(value => {
-                const parsedValue = toFiniteNumber(value);
-                return parsedValue === null ? -1 : parsedValue;
-            })),
+            data: data.map(row => row.map(value => toFiniteNumber(value))),
             rowNames,
             colNames
         };
@@ -101,25 +98,55 @@ const normalizeHclustInput = ({
 
     return {
         data: data.map(row => numericColumnNames.map(key => {
-            const parsedValue = toFiniteNumber(row[key]);
-            return parsedValue === null ? -1 : parsedValue;
+            return toFiniteNumber(row[key]);
         })),
         rowNames: rowNames ?? (textColumnName ? data.map((row, idx) => `${row[textColumnName]}${idx}`) : rowNames),
         colNames: colNames ?? numericColumnNames
     };
 }
 
-// trim label lengths if they are greater than 8 characters
-// function trimText(idx, arr) {
-//     return idx.map(e => {
-//         const str = String(arr[e]);
-//         if (str.length > 12) {
-//             return str.slice(0, 12) + "..."; // truncate to 12 characters + "..."
-//         } else {
-//             return str;
-//         }
-//     })
-// }
+const resolveMissingFilterIndices = (matrix, removeMissingBy = "none") => {
+    const rowIndices = d3.range(matrix.length);
+    const colIndices = d3.range(matrix[0]?.length ?? 0);
+
+    if (removeMissingBy === "row") {
+        return {
+            keptRowIndices: rowIndices.filter(rowIndex => matrix[rowIndex].every(value => value !== null)),
+            keptColIndices: colIndices
+        };
+    }
+
+    if (removeMissingBy === "col") {
+        return {
+            keptRowIndices: rowIndices,
+            keptColIndices: colIndices.filter(colIndex => matrix.every(row => row[colIndex] !== null))
+        };
+    }
+
+    return {
+        keptRowIndices: rowIndices,
+        keptColIndices: colIndices
+    };
+}
+
+const materializeHclustInput = ({
+    normalized,
+    keptRowIndices,
+    keptColIndices,
+    missingValue = -1
+}) => ({
+    data: keptRowIndices.map(rowIndex => keptColIndices.map(colIndex => {
+        const value = normalized.data[rowIndex][colIndex];
+        return value === null ? missingValue : value;
+    })),
+    rowNames: Array.isArray(normalized.rowNames)
+        ? keptRowIndices.map(rowIndex => normalized.rowNames[rowIndex])
+        : normalized.rowNames,
+    colNames: Array.isArray(normalized.colNames)
+        ? keptColIndices.map(colIndex => normalized.colNames[colIndex])
+        : normalized.colNames
+})
+
 
 
 export async function hclust_plot(options = {}) {
@@ -154,6 +181,8 @@ export async function hclust_plot(options = {}) {
         // heatmap color (array of 3 colors: low, middle, high)
         heatmapColor: heatmapColor = ['#000080', '#ffffff', '#d73027'],
         heatmapColorScale: heatmapColorScale = null,
+        missingValue: missingValue = -1,
+        removeMissingBy: removeMissingBy = "none",
         // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
@@ -164,18 +193,20 @@ export async function hclust_plot(options = {}) {
 
     //Normalize both matrices to ensure they are in the correct format and dimensions match. 'data' is used for clustering and 'displayData' is used for the heatmap (can be the same as 'data' if 'displayData' is not provided).
     const {
-        data,
-        rowNames,
-        colNames
-    } = normalizeHclustInput({
+        data: rawMatrix,
+        rowNames: rawRowNames,
+        colNames: rawColNames
+    } = extractHclustInput({
         data: rawData,
         rowNames: inputRowNames,
         colNames: inputColNames
     });
 
     const {
-        data: displayData
-    } = normalizeHclustInput({
+        data: rawDisplayMatrix,
+        rowNames: rawDisplayRowNames,
+        colNames: rawDisplayColNames
+    } = extractHclustInput({
         data: rawDisplayData ?? rawData,
         rowNames: inputRowNames,
         colNames: inputColNames
@@ -183,13 +214,54 @@ export async function hclust_plot(options = {}) {
 
     //Validate dimensions match
     if (
-        displayData.length !== data.length ||
-        displayData[0]?.length !== data[0]?.length
+        rawDisplayMatrix.length !== rawMatrix.length ||
+        rawDisplayMatrix[0]?.length !== rawMatrix[0]?.length
     ) {
         throw new Error("displayData must have the same dimensions as data");
     }
 
-    const maxAutoSize = 1000; // maximum size for auto-scaling to prevent excessively large plots
+    const {
+        keptRowIndices,
+        keptColIndices
+    } = resolveMissingFilterIndices(rawMatrix, removeMissingBy);
+
+    if (keptRowIndices.length === 0) {
+        throw new Error(`hclust_plot() removeMissingBy="${removeMissingBy}" removed all rows.`);
+    }
+
+    if (keptColIndices.length === 0) {
+        throw new Error(`hclust_plot() removeMissingBy="${removeMissingBy}" removed all columns.`);
+    }
+
+    const {
+        data,
+        rowNames,
+        colNames
+    } = materializeHclustInput({
+        normalized: {
+            data: rawMatrix,
+            rowNames: rawRowNames,
+            colNames: rawColNames
+        },
+        keptRowIndices,
+        keptColIndices,
+        missingValue
+    });
+
+    const {
+        data: displayData
+    } = materializeHclustInput({
+        normalized: {
+            data: rawDisplayMatrix,
+            rowNames: rawDisplayRowNames,
+            colNames: rawDisplayColNames
+        },
+        keptRowIndices,
+        keptColIndices,
+        missingValue
+    });
+
+    const maxAutoSize = 500; // maximum size for auto-scaling to prevent excessively large plots
     const colCount = data[0]?.length ?? 0;
     const rowCount = data.length;
     const autoWidth = Math.min(maxAutoSize, Math.max(400, colCount * 18 + 260));
@@ -210,6 +282,8 @@ export async function hclust_plot(options = {}) {
             ? Math.min(maxAutoSize, Math.max(320, detectedContainerWidth - 24))
             : autoWidth);
     const height = Number.isFinite(inputHeight) && inputHeight > 0 ? inputHeight : autoHeight;
+
+    console.log("hclust_plot dimensions:", { width, height });
 
     // 'data' is now the main matrix input
     // console.log("hclust_plot() data:", data)
@@ -346,7 +420,8 @@ export async function hclust_plot(options = {}) {
     // height: heatmapInnerHeight,
     legendOffsetX: 20,
     color: heatmapColor,
-    colorScale: heatmapColorScale
+    colorScale: heatmapColorScale,
+    missingValue
 });
 
     // Append myNewPlot inside the main 'g' group so it aligns perfectly

@@ -169,20 +169,20 @@ document.addEventListener("click", (e) => {
 });
 
 // Override console methods
-console.log = (...args) => {
-  originalConsole.log(...args);
-  displayInConsole(args, 'log');
-};
+// console.log = (...args) => {
+//   originalConsole.log(...args);
+//   displayInConsole(args, 'log');
+// };
 
-console.warn = (...args) => {
-  originalConsole.warn(...args);
-  displayInConsole(args, 'warn');
-};
+// console.warn = (...args) => {
+//   originalConsole.warn(...args);
+//   displayInConsole(args, 'warn');
+// };
 
-console.error = (...args) => {
-  originalConsole.error(...args);
-  displayInConsole(args, 'err');
-};
+// console.error = (...args) => {
+//   originalConsole.error(...args);
+//   displayInConsole(args, 'err');
+// };
 
 // Console controls
 document.getElementById("btnClearConsole")?.addEventListener("click", () => {
@@ -267,6 +267,8 @@ const appState = {
   data: null,         // array of objects (rows)
   source: null,       // "file" | "builtin"
   name: null,         // filename or dataset name
+  fileOriginalData: null, // snapshot of originally loaded file data
+  fileIsTransposed: false,
   selectedColumns: [], // columns selected by user
   selectionMode: "normal", // "normal" | "scatter" (for 2-column limit)
   hclustClusterRows: true,  // toggle for hclust row clustering
@@ -274,6 +276,8 @@ const appState = {
 };
 
 const plotContainerIds = ["myPCA", "myHclust", "myHeatmap", "myUMAP", "myTSNE", "myScatter", "myPairs", "myPlots"];
+const defaultPlotHeight = 410;
+const defaultPairsHeight = 900;
 
 function resetAllPlots() {
   plotContainerIds.forEach(id => {
@@ -284,10 +288,31 @@ function resetAllPlots() {
   });
 }
 
+function clearMyPlots() {
+  const el = document.getElementById("myPlots");
+  if (!el) return;
+  el.innerHTML = "";
+  el.classList.remove("has-plot");
+}
+
 function showPlotLoading(el, label = "Loading...") {
   if (!el) return;
   el.innerHTML = `<div class="text-center text-muted p-4">${label}</div>`;
   el.classList.add("has-plot");
+}
+
+function getNumericColumnCount(data) {
+  if (!Array.isArray(data) || data.length === 0) return 0;
+  const sample = data[0] || {};
+  return Object.keys(sample).filter(key => typeof sample[key] === "number" && Number.isFinite(sample[key])).length;
+}
+
+function getSlowMatrixWarningLabel(data, baseLabel = "Loading...") {
+  const numericColumnCount = getNumericColumnCount(data);
+  if (numericColumnCount > 50) {
+    return `${baseLabel}<div class="small text-danger mt-2">Warning: ${numericColumnCount} columns selected; this may be too slow due to a large covariance matrix.</div>`;
+  }
+  return baseLabel;
 }
 
 function resetDatasetUiState() {
@@ -327,6 +352,9 @@ function renderTableRight(data, title = "Dataset Preview") {
   }
 
   const cols = Object.keys(data[0]);
+  const sample = data[0] || {};
+  const numericCols = cols.filter(col => typeof sample[col] === 'number');
+  const categoricalCols = cols.filter(col => typeof sample[col] !== 'number');
   
   // Initialize all columns as selected if none are selected
   if (appState.selectedColumns.length === 0) {
@@ -345,6 +373,14 @@ function renderTableRight(data, title = "Dataset Preview") {
   `;
   container.appendChild(headerDiv);
 
+  const selectionControlsDiv = document.createElement("div");
+  selectionControlsDiv.className = "d-flex justify-content-end gap-2 mb-2";
+  selectionControlsDiv.innerHTML = `
+    <button id="btnSelectAllCols" class="btn btn-sm btn-outline-secondary" type="button">Select all</button>
+    <button id="btnDeselectAllCols" class="btn btn-sm btn-outline-secondary" type="button">Deselect all</button>
+  `;
+  container.appendChild(selectionControlsDiv);
+
   // Create scrollable wrapper
   const scrollWrapper = document.createElement("div");
   scrollWrapper.style.maxHeight = "200px";  // Height for ~5 rows
@@ -359,6 +395,26 @@ function renderTableRight(data, title = "Dataset Preview") {
   thead.style.top = "0";
   thead.style.backgroundColor = "#111111";
   thead.style.zIndex = "1";
+
+  const columnButtons = new Map();
+
+  function updateSelectedCount() {
+    const countEl = document.getElementById("selectedColCount");
+    if (countEl) countEl.textContent = appState.selectedColumns.length;
+  }
+
+  function refreshColumnButtons() {
+    cols.forEach(col => {
+      const button = columnButtons.get(col);
+      if (!button) return;
+      const selected = appState.selectedColumns.includes(col);
+      button.className = `btn btn-sm w-100 text-start ${selected ? "btn-primary" : "btn-outline-secondary"}`;
+      if (categoricalCols.includes(col)) {
+        button.style.cursor = "not-allowed";
+      }
+    });
+    updateSelectedCount();
+  }
   
   const hr = document.createElement("tr");
   cols.forEach(c => {
@@ -367,7 +423,6 @@ function renderTableRight(data, title = "Dataset Preview") {
     th.style.padding = "8px";
     
     // Check if column is categorical (text)
-    const sample = data[0];
     const isCategorical = typeof sample[c] !== 'number';
     
     // Set cursor style
@@ -389,6 +444,8 @@ function renderTableRight(data, title = "Dataset Preview") {
       btn.title = "Categorical columns cannot be deselected";
       btn.style.cursor = "not-allowed";
     }
+
+    columnButtons.set(c, btn);
     
     // Click handler to toggle selection
     btn.addEventListener("click", () => {
@@ -421,8 +478,7 @@ function renderTableRight(data, title = "Dataset Preview") {
       }
 
       // Update count
-      const countEl = document.getElementById("selectedColCount");
-      if (countEl) countEl.textContent = appState.selectedColumns.length;
+      updateSelectedCount();
 
       // Clear all plot containers when variable is selected/deselected
       resetAllPlots();
@@ -431,6 +487,26 @@ function renderTableRight(data, title = "Dataset Preview") {
     th.appendChild(btn);
     hr.appendChild(th);
   });
+
+  document.getElementById("btnSelectAllCols")?.addEventListener("click", () => {
+    if (appState.selectionMode === "scatter") {
+      appState.selectedColumns = [...numericCols.slice(0, 2), ...categoricalCols];
+      console.log("Scatter mode: Select all keeps max 2 numeric columns.");
+    } else {
+      appState.selectedColumns = [...cols];
+    }
+    refreshColumnButtons();
+    resetAllPlots();
+  });
+
+  document.getElementById("btnDeselectAllCols")?.addEventListener("click", () => {
+    appState.selectedColumns = [...categoricalCols];
+    refreshColumnButtons();
+    resetAllPlots();
+  });
+
+  refreshColumnButtons();
+
   thead.appendChild(hr);
   table.appendChild(thead);
 
@@ -472,6 +548,79 @@ function parseDelimitedText(text) {
   });
 }
 
+function transposeObjectRows(data) {
+  if (!Array.isArray(data) || data.length === 0) return [];
+
+  const keys = Object.keys(data[0]);
+  const preferredRowNameKeys = ["label", "row", "rows", "name", "id", "gene", "sample"];
+  const hasAnyValue = (key) => data.some(row => String(row[key] ?? "").trim() !== "");
+  const inferredTextKeys = keys.filter(key => data.some(row => typeof row[key] === "string" && String(row[key]).trim() !== ""));
+  const uniqueValueRatio = (key) => {
+    const values = data.map(row => String(row[key] ?? "").trim());
+    if (values.length === 0) return 0;
+    return new Set(values).size / values.length;
+  };
+
+  const preferredMatch = preferredRowNameKeys.find(candidate =>
+    keys.some(key => key.toLowerCase() === candidate && hasAnyValue(key))
+  );
+
+  const matchingPreferredKey = preferredMatch
+    ? keys.find(key => key.toLowerCase() === preferredMatch)
+    : null;
+
+  const firstKeyLooksLikeRowName = keys.length > 0 && hasAnyValue(keys[0]) && data.some(row => typeof row[keys[0]] !== "number");
+
+  const identifierLikeKey = keys.find((key, index) => {
+    if (!hasAnyValue(key)) return false;
+    const ratio = uniqueValueRatio(key);
+    return ratio >= 0.9 && (index === 0 || key.toLowerCase() === "id" || key.toLowerCase() === "label");
+  });
+
+  const textKey = matchingPreferredKey
+    ?? (firstKeyLooksLikeRowName ? keys[0] : null)
+    ?? (inferredTextKeys.length > 0 ? inferredTextKeys[0] : null)
+    ?? identifierLikeKey;
+
+  const rowLabelKey = "label";
+  const keysToTranspose = textKey ? keys.filter(key => key !== textKey) : keys;
+
+  const usedNames = new Set();
+  const transposedColumnNames = data.map((sourceRow, rowIndex) => {
+    const fallbackName = `row_${rowIndex + 1}`;
+    const baseName = textKey
+      ? String(sourceRow[textKey] ?? "").trim() || fallbackName
+      : fallbackName;
+
+    let finalName = baseName;
+    let suffix = 2;
+    while (usedNames.has(finalName)) {
+      finalName = `${baseName}_${suffix}`;
+      suffix += 1;
+    }
+    usedNames.add(finalName);
+    return finalName;
+  });
+
+  const transposed = keysToTranspose.map((key) => {
+    const row = { [rowLabelKey]: key };
+    data.forEach((sourceRow, rowIndex) => {
+      row[transposedColumnNames[rowIndex]] = sourceRow[key];
+    });
+    return row;
+  });
+
+  return transposed;
+}
+
+function updateTransposeButtonState() {
+  const btnTranspose = document.getElementById("btnTransposeFile");
+  if (!btnTranspose) return;
+  const enabled = appState.source === "file" && Array.isArray(appState.data) && appState.data.length > 0;
+  btnTranspose.disabled = !enabled;
+  btnTranspose.textContent = appState.fileIsTransposed ? "Restore Original File" : "Transpose Loaded File";
+}
+
 // ======== GUI: BUILT-IN DATASET SELECT ========
 document.getElementById("builtinData")?.addEventListener("change", (e) => {
   const val = e.target.value;
@@ -483,6 +632,8 @@ document.getElementById("builtinData")?.addEventListener("change", (e) => {
     // Reset loaded file info
     appState.source = "builtin";
     appState.name = val === "iris" ? "Iris" : "Spiral";
+    appState.fileOriginalData = null;
+    appState.fileIsTransposed = false;
     appState.selectedColumns = [];
     appState.data = val === "iris" ? irisData : spiralData;
 
@@ -492,6 +643,8 @@ document.getElementById("builtinData")?.addEventListener("change", (e) => {
     // Optionally clear file input
     const fileInput = document.getElementById("fileInput");
     if (fileInput) fileInput.value = "";
+
+    updateTransposeButtonState();
 
     console.log(`Built-in ${appState.name} data selected`);
     renderTableRight(appState.data, `${appState.name} (built-in)`);
@@ -514,6 +667,8 @@ document.getElementById("fileInput")?.addEventListener("change", (e) => {
     appState.data = data;
     appState.source = "file";
     appState.name = file.name;
+    appState.fileOriginalData = data.map(row => ({ ...row }));
+    appState.fileIsTransposed = false;
     appState.selectedColumns = []; // Reset selection
 
     // Reset tool/UI state
@@ -522,11 +677,48 @@ document.getElementById("fileInput")?.addEventListener("change", (e) => {
     const builtinSelect = document.getElementById("builtinData");
     if (builtinSelect) builtinSelect.selectedIndex = 0;
 
+    updateTransposeButtonState();
+
     renderTableRight(appState.data, `Loaded file: ${file.name}`);
     // Clear all plot containers
     resetAllPlots();
   };
   reader.readAsText(file);
+});
+
+document.getElementById("btnTransposeFile")?.addEventListener("click", () => {
+  if (appState.source !== "file" || !Array.isArray(appState.data) || appState.data.length === 0) {
+    console.warn("Load a file first to use transpose.");
+    updateTransposeButtonState();
+    return;
+  }
+
+  if (!Array.isArray(appState.fileOriginalData) || appState.fileOriginalData.length === 0) {
+    appState.fileOriginalData = appState.data.map(row => ({ ...row }));
+  }
+
+  if (appState.fileIsTransposed) {
+    appState.data = appState.fileOriginalData.map(row => ({ ...row }));
+    appState.fileIsTransposed = false;
+    renderTableRight(appState.data, `Loaded file: ${appState.name}`);
+  } else {
+    appState.data = transposeObjectRows(appState.fileOriginalData);
+    appState.fileIsTransposed = true;
+    renderTableRight(appState.data, `Loaded file (transposed): ${appState.name}`);
+  }
+
+  appState.selectedColumns = [];
+  resetDatasetUiState();
+  resetAllPlots();
+  updateTransposeButtonState();
+});
+
+updateTransposeButtonState();
+
+["btnPCA", "btnTSNE", "btnUMAP", "btnScatter", "btnPairs", "btnHclust", "btnHeatmap", "btnHclustRows", "btnHclustCols", "btnTransposeFile"].forEach(id => {
+  document.getElementById(id)?.addEventListener("click", () => {
+    clearMyPlots();
+  });
 });
 
 // ======== PCA: CLICK TOOL BUTTON ========
@@ -575,9 +767,9 @@ const el = document.getElementById("myPCA");
 
   // Use container size (with safe minimums)
   const width = Math.max(520, el.clientWidth - 24);
-  const height = 410;
+  const height = defaultPlotHeight;
 
-  showPlotLoading(el, "Loading...");
+  showPlotLoading(el, getSlowMatrixWarningLabel(data, "Loading..."));
 
   await pca_plot({
     data,
@@ -611,7 +803,7 @@ document.getElementById("btnHclust")?.addEventListener("click", async () => {
   if (!el) return;
 
   const width = Math.max(520, el.clientWidth - 24);
-  const height = 1500;
+ // const height =  900;
 
   // Derive numeric columns and labels
   const sample = data[0] || {};
@@ -657,7 +849,7 @@ document.getElementById("btnHclust")?.addEventListener("click", async () => {
     rowNames: rowNames,
     colNames: colNames,
     width,
-    height,
+    //height,
     clusterCols: appState.hclustClusterCols,
     clusterRows: appState.hclustClusterRows
   });
@@ -689,7 +881,7 @@ document.getElementById("btnHclustCols")?.addEventListener("click", () => {
 // ======== HEATMAP: CLICK TOOL BUTTON ========
 document.getElementById("btnHeatmap")?.addEventListener("click", async () => {
   const data = appState.data;
-console.log("btnHeatmap clicked, appState.data:", data);
+  //console.log("btnHeatmap clicked, appState.data:", data);
   // Reset to normal selection mode
   appState.selectionMode = "normal";
 
@@ -709,7 +901,7 @@ console.log("btnHeatmap clicked, appState.data:", data);
   if (!el) return;
 
   const width = Math.max(520, el.clientWidth - 24);
-  const height = 1500;
+ // const height =  900;
 
   // Derive numeric columns and labels
   const sample = data[0] || {};
@@ -739,7 +931,7 @@ console.log("btnHeatmap clicked, appState.data:", data);
     rowNames: rowNames,
     colNames: colNames,
     width,
-    height,
+    //height,
   });
 });
 
@@ -788,9 +980,9 @@ document.getElementById("btnUMAP")?.addEventListener("click", async () => {
   if (!el) return;
 
   const width = Math.max(520, el.clientWidth - 24);
-  const height = 410;
+  const height = defaultPlotHeight;
 
-  showPlotLoading(el, "Loading...");
+  showPlotLoading(el, getSlowMatrixWarningLabel(data, "Loading..."));
 
   await umap_plot({
     data,
@@ -844,9 +1036,9 @@ document.getElementById("btnTSNE")?.addEventListener("click", async () => {
   if (!el) return;
 
   const width = Math.max(520, el.clientWidth - 24);
-  const height = 410;
+  const height = defaultPlotHeight;
 
-  showPlotLoading(el, "Loading...");
+  showPlotLoading(el, getSlowMatrixWarningLabel(data, "Loading..."));
 
   await tsne_plot({
     data,
@@ -929,7 +1121,7 @@ document.getElementById("btnScatter")?.addEventListener("click", async () => {
   if (!el) return;
 
   const width = Math.max(520, el.clientWidth - 24);
-  const height = 410;
+  const height = defaultPlotHeight;
 
   showPlotLoading(el, "Loading...");
 
@@ -985,7 +1177,7 @@ document.getElementById("btnPairs")?.addEventListener("click", async () => {
   if (!el) return;
 
   const width = Math.max(900, el.clientWidth - 24);
-  const height = 900;
+  const height = defaultPairsHeight;
 
   showPlotLoading(el, "Loading...");
 

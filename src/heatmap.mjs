@@ -49,6 +49,9 @@ export async function heatmap_plot(options = {}) {
     legendOffsetX: legendOffsetX = 0,
 
     colorScale: colorScale = null,
+    missingValue: missingValue = -1,
+    denseLabelThreshold: denseLabelThreshold = 49,
+    denseLabelBoost: denseLabelBoost = 1.8,
          // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
@@ -60,13 +63,16 @@ export async function heatmap_plot(options = {}) {
   // Default color palette: navy (low) → white (middle) → red (high)
   const color = inputColor ?? ['#000080', '#ffffff', '#d73027'];
 
-  const maxAutoSize = 300; // maximum size for auto-scaling to prevent excessively large plots
+  const maxAutoSize = 500; // maximum size for auto-scaling to prevent excessively large plots
   const colCount = data[0]?.length ?? 0;
   const rowCount = data.length;
-  const autoWidth = Math.min(maxAutoSize, Math.max(400, colCount * 16 + 180));
-  const autoHeight = Math.min(maxAutoSize, Math.max(400, rowCount * 16 + 180));
+  const autoWidth = Math.min(maxAutoSize, Math.max(500, colCount * 16 + 180));
+  const autoHeight = Math.min(maxAutoSize, Math.max(500, rowCount * 16 + 180));
+  console.log("Calculated autoWidth:", autoWidth, "autoHeight:", autoHeight);
   const width = Number.isFinite(inputWidth) && inputWidth > 0 ? inputWidth : autoWidth;
   const height = Number.isFinite(inputHeight) && inputHeight > 0 ? inputHeight : autoHeight;
+
+  console.log("heatmap_plot dimensions:", { width, height });
 
   // start of heatmap
 let color_scale;
@@ -81,7 +87,7 @@ if (typeof colorScale === "function") {
 
 } else {
   // exclude missing
-  const flatValues = data.flat().filter(v => Number.isFinite(v) && v !== -1);
+  const flatValues = data.flat().filter(v => Number.isFinite(v) && v !== missingValue);
 
   const extent = d3.extent(flatValues);
 
@@ -99,11 +105,15 @@ if (typeof colorScale === "function") {
 
   // bottom labels: Calculate font size as half the heatmap cell width
   const cellWidth = (width - marginLeft - marginRight ) / data[0].length;
-  const labelFontSizeBottom = Math.min(Math.max(cellWidth / 6, 8), 20); // clamp between 8px and 20px
+  const colDensityBoost = colNames.length > denseLabelThreshold ? denseLabelBoost : 1;
+  let labelFontSizeBottom = Math.min(Math.max(cellWidth / 6, 8), 20); // clamp between 8px and 20px
+  labelFontSizeBottom = Math.min(labelFontSizeBottom * colDensityBoost, 26);
   const maxColLabelLength = Math.min(d3.max(colNames.map(c => String(c).length)), 13);
   const dynamicBottomMargin = Math.max(marginBottom, labelFontSizeBottom * maxColLabelLength * 0.5  + 5);
   const cellHeight = (height - marginTop - dynamicBottomMargin) / data.length;
-  const labelFontSizeRight = Math.min(Math.max(cellHeight / 3, 7), 20); // clamp between 7px and 20px
+  const rowDensityBoost = rowNames.length > denseLabelThreshold ? denseLabelBoost : 1;
+  let labelFontSizeRight = Math.min(Math.max(cellHeight / 3, 7), 20); // clamp between 7px and 20px
+  labelFontSizeRight = Math.min(labelFontSizeRight * rowDensityBoost, 24);
   const maxRowLabelLength = Math.min(d3.max(rowNames.map(r => String(r).length)), 13);
   const dynamicRightMargin = Math.max(200, labelFontSizeRight * maxRowLabelLength * 0.6 + 100);
   const margin = ({
@@ -147,7 +157,7 @@ if (typeof colorScale === "function") {
   const colIndices = d3.range(data[0].length);
   const rowIndices = d3.range(data.length);
 
-  const maxVisibleXLabels = 30;
+  const maxVisibleXLabels = 49;
   const xLabelStep = colIndices.length > maxVisibleXLabels
     ? Math.ceil(colIndices.length / maxVisibleXLabels)
     : 1;
@@ -159,7 +169,7 @@ if (typeof colorScale === "function") {
     xTickValues.push(colIndices[colIndices.length - 1]);
   }
 
-  const maxVisibleYLabels = 30;
+  const maxVisibleYLabels = 49;
   const yLabelStep = rowIndices.length > maxVisibleYLabels
     ? Math.ceil(rowIndices.length / maxVisibleYLabels)
     : 1;
@@ -269,7 +279,7 @@ if (typeof colorScale === "function") {
 
 
   function getHeatmapColor(v, color_scale) {
-  if (v === -1 || !Number.isFinite(v)) return "#000000";
+  if (v === missingValue || !Number.isFinite(v)) return "#32CD32";
   return color_scale(v);
 }
 
@@ -370,12 +380,12 @@ g.append("rect")
   .attr("y", legendY + legendHeight + 20)
   .attr("width", 15)
   .attr("height", 15)
-  .attr("fill", "#000000");
+  .attr("fill", "#32CD32");// missing  = green color
 
 g.append("text")
   .attr("x", legendX + 20)
   .attr("y", legendY + legendHeight + 32)
-  .text("Missing")
+  .text(`Missing (${missingValue})`)
   .style("font-size", "12px")
   .style("fill", "#000");
 
