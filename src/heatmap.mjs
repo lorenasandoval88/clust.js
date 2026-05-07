@@ -56,6 +56,7 @@ export async function heatmap_plot(options = {}) {
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
         tooltip_fontSize: tooltip_fontSize = '14px',
+        mountToDOM: mountToDOM = true,
 
   } = options
         const targetDivId = divId;
@@ -109,7 +110,7 @@ if (typeof colorScale === "function") {
   let labelFontSizeBottom = Math.min(Math.max(cellWidth / 6, 8), 20); // clamp between 8px and 20px
   labelFontSizeBottom = Math.min(labelFontSizeBottom * colDensityBoost, 26);
   const maxColLabelLength = Math.min(d3.max(colNames.map(c => String(c).length)), 13);
-  const dynamicBottomMargin = Math.max(marginBottom, labelFontSizeBottom * maxColLabelLength * 0.5  + 5);
+  const dynamicBottomMargin = Math.max(marginBottom, labelFontSizeBottom * maxColLabelLength * 0.5 + 5);
   const cellHeight = (height - marginTop - dynamicBottomMargin) / data.length;
   const rowDensityBoost = rowNames.length > denseLabelThreshold ? denseLabelBoost : 1;
   let labelFontSizeRight = Math.min(Math.max(cellHeight / 3, 7), 20); // clamp between 7px and 20px
@@ -395,18 +396,18 @@ g.append("text")
 
   // Here we add the svg to the plot div
   // Check if the div was provided in the function call
-  if (document.getElementById(targetDivId)) {
-    console.log(`plot div provided in function parameters.divId:`, targetDivId);
-    const div = document.getElementById(targetDivId)
-    div.innerHTML = ""
-    div.appendChild(svg.node())
-
-  } else if (!document.getElementById("childDiv")) {
-    // console.log(`pcaPlot div  NOT provided in function parameters or doesn't exist, creating div....`);
-    const div = document.createElement("div")
-    const plotsPanel = document.getElementById("plotsPanel");
-    (plotsPanel || document.body).appendChild(div)
-    div.appendChild(svg.node());
+  if (mountToDOM) {
+    if (document.getElementById(targetDivId)) {
+      console.log(`plot div provided in function parameters.divId:`, targetDivId);
+      const div = document.getElementById(targetDivId)
+      div.innerHTML = ""
+      div.appendChild(svg.node())
+    } else if (!document.getElementById("childDiv")) {
+      const div = document.createElement("div")
+      const plotsPanel = document.getElementById("plotsPanel");
+      (plotsPanel || document.body).appendChild(div)
+      div.appendChild(svg.node());
+    }
   }
 
 

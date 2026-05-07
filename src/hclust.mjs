@@ -187,6 +187,12 @@ export async function hclust_plot(options = {}) {
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
         tooltip_fontSize: tooltip_fontSize = '14px',
+        // interactivity
+        interactive: interactive = true,
+        zoomable: zoomable = true,
+        showResetButton: showResetButton = true,
+        hoverHighlight: hoverHighlight = true,
+        clickSelect: clickSelect = true,
     } = options;
     const targetDivId = divId;
 
@@ -402,11 +408,25 @@ export async function hclust_plot(options = {}) {
         .attr('height', height)
         .attr('fill', '#ffffff');
 
+    // Zoom wrapper layer — everything inside zooms/pans together
+    const zoomLayer = svg.append("g");
+
     // Create the main group before appending myNewPlot
-    const g = svg
+    const g = zoomLayer
         .append('g')
         // move the entire graph down and right to accomodate labels
         .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    // Zoom behavior
+    const zoom = d3.zoom()
+        .scaleExtent([0.5, 8])
+        .on("zoom", event => {
+            zoomLayer.attr("transform", event.transform);
+        });
+
+    if (interactive && zoomable) {
+        svg.call(zoom);
+    }
 
 
     // Heatmap #2: we create a new heatmap with the clustered data and append it to the main 'g' group
@@ -414,19 +434,31 @@ export async function hclust_plot(options = {}) {
     data: displayMatrix,
     rowNames: rowNamesClust,
     colNames: colNamesClust,
-    width: width - margin.left,
-    height: height - margin.top,
-    // width: heatmapInnerWidth,
-    // height: heatmapInnerHeight,
+    width: heatmapInnerWidth + margin.right,
+    height: heatmapInnerHeight + margin.bottom,
+    marginTop: 0,
+    marginLeft: 0,
+    marginRight: margin.right,
+    marginBottom: margin.bottom,
     legendOffsetX: 20,
     color: heatmapColor,
     colorScale: heatmapColorScale,
-    missingValue
+    missingValue,
+    hoverHighlight: interactive && hoverHighlight,
+    clickSelect: interactive && clickSelect,
+    mountToDOM: false,
 });
 
-    // Append myNewPlot inside the main 'g' group so it aligns perfectly
+    // Extract the inner <g> and <defs> from the heatmap SVG to avoid double-translation
     if (myNewPlot) {
-        g.node().appendChild(myNewPlot);
+        // Move defs (gradient) into hclust SVG so url(#id) references still resolve
+        d3.select(myNewPlot).selectAll("defs").each(function() {
+            svg.node().insertBefore(this, svg.node().firstChild);
+        });
+        const heatmapG = d3.select(myNewPlot).select("g").node();
+        if (heatmapG) {
+            g.node().appendChild(heatmapG);
+        }
     }
 
     //################################################################
@@ -482,7 +514,7 @@ export async function hclust_plot(options = {}) {
         const leafs = allNodes.filter(d => !d.children)
         leafs.sort((a, b) => a.x - b.x)
         //const leafHeight = (width-margin.left)/ leafs.length// spacing between leaves
-        const leafHeight = (width - margin.left - margin.right) / leafs.length // spacing between leaves (matches x_scale range)
+        const leafHeight = heatmapInnerWidth / leafs.length // spacing between leaves (matches x_scale range)
 
         leafs.forEach((d, i) => d.x = i * leafHeight + leafHeight / 2)
 
@@ -505,7 +537,7 @@ export async function hclust_plot(options = {}) {
         const colDendroGap = 5;
         const colDendroY = margin.top - colPadding - colDendroGap;
         root.links().forEach((link, i) => {
-            svg
+            zoomLayer
                 .append("path")
                 .datum(link)
                 .attr("class", "link")
@@ -570,7 +602,7 @@ export async function hclust_plot(options = {}) {
 
         // row (left) dendrogram 
         root2.links().forEach((link, i) => {
-            svg
+            zoomLayer
                 .append("path")
                 .datum(link)
                 .attr("class", "link")
@@ -591,25 +623,58 @@ export async function hclust_plot(options = {}) {
 
     // Here we add the svg to the plot div
     // Check if the div was provided in the function call
-    if (document.getElementById(targetDivId)) {
-        const div = document.getElementById(targetDivId)
-        // document.body.appendChild(div)
-        div.innerHTML = ""
-        div.appendChild(svg.node())
-        // console.log(`plot div provided in function parameters.divId:`, targetDivId);
+    // Shared lock state for click-select (scoped to this plot instance)
+    let lockedCell = null;
 
+    const _mountPlot = (div) => {
+        div.innerHTML = "";
+
+        // Button bar
+        const buttonBar = document.createElement("div");
+        buttonBar.style.cssText = "display:flex;gap:6px;margin-bottom:4px;";
+
+        if (interactive && zoomable && showResetButton) {
+            const resetButton = document.createElement("button");
+            resetButton.textContent = "Reset zoom";
+            resetButton.style.cssText = "padding:3px 10px;cursor:pointer;";
+            resetButton.onclick = () => {
+                svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+            };
+            buttonBar.appendChild(resetButton);
+        }
+
+        if (interactive && clickSelect) {
+            const clearButton = document.createElement("button");
+            clearButton.textContent = "Clear selection";
+            clearButton.style.cssText = "padding:3px 10px;cursor:pointer;";
+            clearButton.onclick = () => {
+                lockedCell = null;
+                d3.selectAll(".heatmap-cell")
+                    .style("opacity", 1)
+                    .style("stroke", "none");
+            };
+            buttonBar.appendChild(clearButton);
+        }
+
+        if (buttonBar.children.length > 0) div.appendChild(buttonBar);
+        div.appendChild(svg.node());
+    };
+
+    if (document.getElementById(targetDivId)) {
+        const div = document.getElementById(targetDivId);
+        _mountPlot(div);
 
     } else if (!document.getElementById("childDiv")) {
 
         const currentDivNum = hclustDt.data.divNum;
 
-        const div = document.createElement("div")
+        const div = document.createElement("div");
         div.id = targetDivId || 'hclust_plot' + currentDivNum;
         console.log("div  NOT provided in function options or doesn't exist... created a new div with id: ", div.id, "and appended to document body!");
 
         const plotsPanel = document.getElementById("plotsPanel");
-        (plotsPanel || document.body).appendChild(div)
-        div.appendChild(svg.node());
+        (plotsPanel || document.body).appendChild(div);
+        _mountPlot(div);
         hclustDt.data.divNum = currentDivNum + 1;
     }
     // console.log("svg", svg.node())
