@@ -662,7 +662,18 @@ document.getElementById("fileInput")?.addEventListener("change", (e) => {
   const reader = new FileReader();
   reader.onload = (evt) => {
     const text = evt.target.result;
-    const data = parseDelimitedText(text);
+    let data;
+    if (file.name.endsWith(".json")) {
+      try {
+        data = JSON.parse(text);
+        if (!Array.isArray(data)) throw new Error("JSON file must be an array of objects.");
+      } catch (err) {
+        console.error("Failed to parse JSON file:", err.message);
+        return;
+      }
+    } else {
+      data = parseDelimitedText(text);
+    }
 
     appState.data = data;
     appState.source = "file";
@@ -819,6 +830,13 @@ document.getElementById("btnHclust")?.addEventListener("click", async () => {
   const labelKey = keys.find(k => typeof sample[k] !== "number");
 
   const colNames = numericKeys.length ? numericKeys : keys.filter(k => k !== labelKey);
+
+  if (colNames.length === 0) {
+    console.warn("Hclust requires at least one numeric column. Please select a numeric column.");
+    showPlotLoading(el, "Select at least one numeric column to render Hclust.");
+    return;
+  }
+
   const matrix = data.map(row => colNames.map(k => {
     const value = row[k];
     return typeof value === "number" && Number.isFinite(value) ? value : -1;
