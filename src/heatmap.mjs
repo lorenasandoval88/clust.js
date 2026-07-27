@@ -52,6 +52,8 @@ export async function heatmap_plot(options = {}) {
     missingValue: missingValue = -1,
     denseLabelThreshold: denseLabelThreshold = 49,
     denseLabelBoost: denseLabelBoost = 1.8,
+    // angle (degrees) for bottom column labels; -90 = vertical, -45 = diagonal, 0 = horizontal
+    bottomLabelAngle: bottomLabelAngle = -90,
          // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
@@ -110,7 +112,13 @@ if (typeof colorScale === "function") {
   let labelFontSizeBottom = Math.min(Math.max(cellWidth / 6, 8), 20); // clamp between 8px and 20px
   labelFontSizeBottom = Math.min(labelFontSizeBottom * colDensityBoost, 26);
   const maxColLabelLength = Math.min(d3.max(colNames.map(c => String(c).length)), 13);
-  const dynamicBottomMargin = Math.max(marginBottom, labelFontSizeBottom * maxColLabelLength * 0.5 + 5);
+  // Bottom margin depends on label angle: sin(|angle|) determines vertical projection of the rotated text
+  const bottomAngleRad = (Math.abs(bottomLabelAngle) * Math.PI) / 180;
+  const bottomLabelTextWidth = labelFontSizeBottom * maxColLabelLength * 0.5;
+  const dynamicBottomMargin = Math.max(
+    marginBottom,
+    Math.abs(Math.sin(bottomAngleRad)) * bottomLabelTextWidth + labelFontSizeBottom + 5
+  );
   const cellHeight = (height - marginTop - dynamicBottomMargin) / data.length;
   const rowDensityBoost = rowNames.length > denseLabelThreshold ? denseLabelBoost : 1;
   let labelFontSizeRight = Math.min(Math.max(cellHeight / 3, 7), 20); // clamp between 7px and 20px
@@ -227,16 +235,11 @@ if (typeof colorScale === "function") {
 
   x_axis.selectAll('.tick').selectAll('line').remove()
   x_axis.selectAll("text")
-  // .style("text-anchor", "middle")
-  // .attr("dx", "0px")
-  // .attr("dy", "0.5em")
-  // .attr("transform", "rotate(-90)")
-    .style("text-anchor", "end")
-    .attr("dx", "-2px")
-    .attr("dy", "0.3em")
+    .style("text-anchor", bottomLabelAngle === 0 ? "middle" : "end")
+    .attr("dx", bottomLabelAngle === 0 ? "0px" : "-2px")
+    .attr("dy", bottomLabelAngle === 0 ? "0.9em" : "0.3em")
     .attr("class", "xa")
-    .attr("transform", "rotate(-90)")
-    
+    .attr("transform", `rotate(${bottomLabelAngle})`)
     .style("fill", "#000")
 
   //create y axis  plus text labels (at right of heatmap)

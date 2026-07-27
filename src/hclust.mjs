@@ -183,6 +183,8 @@ export async function hclust_plot(options = {}) {
         heatmapColorScale: heatmapColorScale = null,
         missingValue: missingValue = -1,
         removeMissingBy: removeMissingBy = "none",
+        // angle (degrees) for bottom column labels; -90 = vertical, -45 = diagonal, 0 = horizontal
+        bottomLabelAngle: bottomLabelAngle = -90,
         // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
@@ -347,9 +349,14 @@ export async function hclust_plot(options = {}) {
     const cellWidth = (width - marginLeft - marginRight) / data[0].length;
     const labelFontSizeBottom = Math.min(Math.max(cellWidth / 6, 8), 20); // clamp between 8px and 20px
 
-    // Calculate bottom margin based on longest column label and font size
+    // Calculate bottom margin based on longest column label, font size, and label angle
     const maxColLabelLength = Math.min(d3.max(colNamesClust.map(c => String(c).length)), 13);
-    const dynamicBottomMargin = Math.max(marginBottom, labelFontSizeBottom * maxColLabelLength * 0.5 + 5);
+    const bottomAngleRad = (Math.abs(bottomLabelAngle) * Math.PI) / 180;
+    const bottomLabelTextWidth = labelFontSizeBottom * maxColLabelLength * 0.5;
+    const dynamicBottomMargin = Math.max(
+        marginBottom,
+        Math.abs(Math.sin(bottomAngleRad)) * bottomLabelTextWidth + labelFontSizeBottom + 5
+    );
     // right labels: Calculate font size as half the heatmap cell height
     const cellHeight = (height - marginTop - dynamicBottomMargin) / data.length;
 
@@ -444,6 +451,7 @@ export async function hclust_plot(options = {}) {
     color: heatmapColor,
     colorScale: heatmapColorScale,
     missingValue,
+    bottomLabelAngle,
     hoverHighlight: interactive && hoverHighlight,
     clickSelect: interactive && clickSelect,
     mountToDOM: false,
