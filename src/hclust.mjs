@@ -188,7 +188,7 @@ export async function hclust_plot(options = {}) {
         // maximum characters shown for row/column tick labels before truncation with an ellipsis
         maxLabelLength: maxLabelLength = 20,
         // horizontal pixel offset applied to the color legend (positive moves it right)
-        legendOffsetX: legendOffsetX = 20,
+        legendOffsetX: legendOffsetX = 25,
         // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
