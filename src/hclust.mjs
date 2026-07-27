@@ -183,8 +183,8 @@ export async function hclust_plot(options = {}) {
         heatmapColorScale: heatmapColorScale = null,
         missingValue: missingValue = -1,
         removeMissingBy: removeMissingBy = "none",
-        // angle (degrees) for bottom column labels; -90 = vertical, -45 = diagonal, 0 = horizontal
-        bottomLabelAngle: bottomLabelAngle = -90,
+        // angle (degrees) for bottom column labels; -45 = vertical, -45 = diagonal, 0 = horizontal
+        bottomLabelAngle: bottomLabelAngle = -45,
         // maximum characters shown for row/column tick labels before truncation with an ellipsis
         maxLabelLength: maxLabelLength = 20,
         // hover tooltip
