@@ -185,6 +185,8 @@ export async function hclust_plot(options = {}) {
         removeMissingBy: removeMissingBy = "none",
         // angle (degrees) for bottom column labels; -90 = vertical, -45 = diagonal, 0 = horizontal
         bottomLabelAngle: bottomLabelAngle = -90,
+        // maximum characters shown for row/column tick labels before truncation with an ellipsis
+        maxLabelLength: maxLabelLength = 20,
         // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
@@ -350,7 +352,7 @@ export async function hclust_plot(options = {}) {
     const labelFontSizeBottom = Math.min(Math.max(cellWidth / 6, 8), 20); // clamp between 8px and 20px
 
     // Calculate bottom margin based on longest column label, font size, and label angle
-    const maxColLabelLength = Math.min(d3.max(colNamesClust.map(c => String(c).length)), 13);
+    const maxColLabelLength = Math.min(d3.max(colNamesClust.map(c => String(c).length)), maxLabelLength);
     const bottomAngleRad = (Math.abs(bottomLabelAngle) * Math.PI) / 180;
     const bottomLabelTextWidth = labelFontSizeBottom * maxColLabelLength * 0.5;
     const dynamicBottomMargin = Math.max(
@@ -362,7 +364,7 @@ export async function hclust_plot(options = {}) {
 
     const labelFontSizeRight = Math.min(Math.max(cellHeight / 3, 7), 20); // clamp between 7px and 20px
     // Calculate right margin based on longest row label and font size
-    const maxRowLabelLength = Math.min(d3.max(rowNamesClust.map(r => String(r).length)), 13);
+    const maxRowLabelLength = Math.min(d3.max(rowNamesClust.map(r => String(r).length)), maxLabelLength);
     const dynamicRightMargin = Math.max(200, labelFontSizeRight * maxRowLabelLength * 0.6 + 100); // 170 extra for legend
 
     const margin = ({
@@ -452,6 +454,7 @@ export async function hclust_plot(options = {}) {
     colorScale: heatmapColorScale,
     missingValue,
     bottomLabelAngle,
+    maxLabelLength,
     hoverHighlight: interactive && hoverHighlight,
     clickSelect: interactive && clickSelect,
     mountToDOM: false,

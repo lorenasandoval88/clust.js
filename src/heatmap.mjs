@@ -17,12 +17,12 @@ const buildData = async function (data) {
   return array
 }
 
-// trim label lengths if they are greater than 8 characters
-function trimText(arr) {
+// trim label lengths if they are greater than maxLen characters
+function trimText(arr, maxLen = 20) {
   return arr.map(label => {
     const str = String(label);
-    if (str.length > 12) {
-      return str.slice(0, 12) + "...";
+    if (str.length > maxLen) {
+      return str.slice(0, maxLen) + "...";
     }
     return str;
   });
@@ -54,6 +54,8 @@ export async function heatmap_plot(options = {}) {
     denseLabelBoost: denseLabelBoost = 1.8,
     // angle (degrees) for bottom column labels; -90 = vertical, -45 = diagonal, 0 = horizontal
     bottomLabelAngle: bottomLabelAngle = -90,
+    // maximum characters shown for row/column tick labels before truncation with an ellipsis
+    maxLabelLength: maxLabelLength = 20,
          // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
@@ -111,7 +113,7 @@ if (typeof colorScale === "function") {
   const colDensityBoost = colNames.length > denseLabelThreshold ? denseLabelBoost : 1;
   let labelFontSizeBottom = Math.min(Math.max(cellWidth / 6, 8), 20); // clamp between 8px and 20px
   labelFontSizeBottom = Math.min(labelFontSizeBottom * colDensityBoost, 26);
-  const maxColLabelLength = Math.min(d3.max(colNames.map(c => String(c).length)), 13);
+  const maxColLabelLength = Math.min(d3.max(colNames.map(c => String(c).length)), maxLabelLength);
   // Bottom margin depends on label angle: sin(|angle|) determines vertical projection of the rotated text
   const bottomAngleRad = (Math.abs(bottomLabelAngle) * Math.PI) / 180;
   const bottomLabelTextWidth = labelFontSizeBottom * maxColLabelLength * 0.5;
@@ -123,7 +125,7 @@ if (typeof colorScale === "function") {
   const rowDensityBoost = rowNames.length > denseLabelThreshold ? denseLabelBoost : 1;
   let labelFontSizeRight = Math.min(Math.max(cellHeight / 3, 7), 20); // clamp between 7px and 20px
   labelFontSizeRight = Math.min(labelFontSizeRight * rowDensityBoost, 24);
-  const maxRowLabelLength = Math.min(d3.max(rowNames.map(r => String(r).length)), 13);
+  const maxRowLabelLength = Math.min(d3.max(rowNames.map(r => String(r).length)), maxLabelLength);
   const dynamicRightMargin = Math.max(200, labelFontSizeRight * maxRowLabelLength * 0.6 + 100);
   const margin = ({
     top: marginTop,
@@ -158,9 +160,9 @@ if (typeof colorScale === "function") {
   // console.log("innerHeight2:", innerHeight);
   // console.log("innerWidth2:", innerWidth);
 
-  // Trim labels to 8 characters max (for display only)
-  const trimmedColnames = trimText(colNames);
-  const trimmedRownames = trimText(rowNames);
+  // Trim labels to maxLabelLength characters max (for display only)
+  const trimmedColnames = trimText(colNames, maxLabelLength);
+  const trimmedRownames = trimText(rowNames, maxLabelLength);
 
   // Use indices for scale domain to avoid duplicate label issues
   const colIndices = d3.range(data[0].length);
