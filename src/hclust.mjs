@@ -187,6 +187,8 @@ export async function hclust_plot(options = {}) {
         bottomLabelAngle: bottomLabelAngle = -45,
         // maximum characters shown for row/column tick labels before truncation with an ellipsis
         maxLabelLength: maxLabelLength = 20,
+        // horizontal pixel offset applied to the color legend (positive moves it right)
+        legendOffsetX: legendOffsetX = 20,
         // hover tooltip
         tooltip_decimal: tooltip_decimal = 2,
         tooltip_fontFamily: tooltip_fontFamily = 'monospace',
@@ -449,7 +451,7 @@ export async function hclust_plot(options = {}) {
     marginLeft: 0,
     marginRight: margin.right,
     marginBottom: margin.bottom,
-    legendOffsetX: 20,
+    legendOffsetX,
     color: heatmapColor,
     colorScale: heatmapColorScale,
     missingValue,
