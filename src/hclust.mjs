@@ -497,7 +497,9 @@ export async function hclust_plot(options = {}) {
         function transformY(data) {
             // console.log("height",height,colPadding)
             const ht = colPadding //height-500//-heatmapInnerHeight;
-            return (data.data.height / colMaxHeight) * ht;
+            // Flip vertically only: leaves (height 0) sit at the bottom, root at the top.
+            // Do NOT use rotate(180) here, it would also mirror x and reverse the leaf order.
+            return ht - (data.data.height / colMaxHeight) * ht;
         }
 
         function colElbow(d) { // H = width, V = height
@@ -541,11 +543,7 @@ export async function hclust_plot(options = {}) {
         // Apply tooltip to our SVG
         svg.call(dendoTooltip)
         // dendo columns
-        // Rotation center: half of heatmap width to align leaves with bottom labels after 180° flip
-        const heatmapWidth = width - margin.left - margin.right;
-        const colDendroRotateX = heatmapWidth / 2;
-        const colDendroRotateY = colPadding / 2;
-        // Position dendrogram so leaves are near heatmap top edge after 180° rotation
+        // Position dendrogram so leaves are near heatmap top edge (vertical flip handled in transformY)
         // Add small gap (5px) between dendrogram leaves and heatmap
         const colDendroGap = 5;
         const colDendroY = margin.top - colPadding - colDendroGap;
@@ -557,7 +555,7 @@ export async function hclust_plot(options = {}) {
                 .attr("stroke", link.source.color || `${colDendoColor}`)
                 .attr("stroke-width", `${3}px`)
                 .attr("fill", 'none')
-                .attr("transform", `translate(${margin.left}, ${colDendroY}) rotate(180, ${colDendroRotateX}, ${colDendroRotateY})`)
+                .attr("transform", `translate(${margin.left}, ${colDendroY})`)
                 .attr("d", colElbow(link))
                 .on('mouseover', dendoTooltip.show)
                 // Hide the tooltip when "mouseout"
